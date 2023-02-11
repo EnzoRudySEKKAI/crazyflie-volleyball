@@ -5,11 +5,11 @@ import glob
 objpoints = []
 imgpoints = []
 
-chessboardSize = (7, 6)
+chessboardSize = (8, 5)
 
 criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
-objp = np.zeros((6 * 7, 3), np.float32)
+objp = np.zeros((5 * 8, 3), np.float32)
 objp[:, :2] = np.mgrid[0:7, 0:6].T.reshape(-1, 2)
 
 images = glob.glob('*.jpg')
