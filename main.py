@@ -7,9 +7,13 @@ with np.load('calibration.npz') as X:
 
 def draw(img, corners, imgpts):
     corner = tuple(corners[0].ravel())
-    img = cv.line(img, corner, tuple(imgpts[0].ravel()), (255, 0, 0), 5)
-    img = cv.line(img, corner, tuple(imgpts[1].ravel()), (0, 255, 0), 5)
-    img = cv.line(img, corner, tuple(imgpts[2].ravel()), (0, 0, 255), 5)
+    print(tuple(imgpts[0].ravel()))
+    img = cv.line(img, (int(corner[0]), int(corner[1])),
+                  (int(tuple(imgpts[0].ravel())[0]), int(tuple(imgpts[0].ravel())[1])), (255, 0, 0), 5)
+    img = cv.line(img, (int(corner[0]), int(corner[1])),
+                  (int(tuple(imgpts[1].ravel())[0]), int(tuple(imgpts[1].ravel())[1])), (0, 255, 0), 5)
+    img = cv.line(img, (int(corner[0]), int(corner[1])),
+                  (int(tuple(imgpts[2].ravel())[0]), int(tuple(imgpts[2].ravel())[1])), (0, 0, 255), 5)
     return img
 
 
@@ -20,10 +24,24 @@ objp[:, :2] = np.mgrid[0:7, 0:6].T.reshape(-1, 2)
 axis = np.float32([[3, 0, 0], [0, 3, 0], [0, 0, -3]]).reshape(-1, 3)
 
 cap = cv.VideoCapture(0)
+cap.set(3, 1280)
+cap.set(4, 720)
+
 while True:
     _, frame = cap.read()
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-    ret, corners = cv.findChessboardCorners(gray, (7, 6), None)
+
+    # undistort
+    h, w = gray.shape[:2]
+    newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
+    dst = cv.undistort(gray, mtx, dist, None, newcameramtx)
+    # crop the image
+    x, y, w, h = roi
+    dst = dst[y:y + h, x:x + w]
+    frame = dst
+    # frame=gray
+
+    ret, corners = cv.findChessboardCorners(frame, (7, 6), None)
     if ret:
         corners2 = cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
         ret, rvecs, tvecs = cv.solvePnP(objp, corners2, mtx, dist)
