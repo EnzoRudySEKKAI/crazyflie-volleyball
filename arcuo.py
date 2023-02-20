@@ -17,13 +17,21 @@ def draw(img, corners, imgpts):
     imgpts1 = tuple(imgpts[1].ravel())
     imgpts2 = tuple(imgpts[2].ravel())
     tuplecorner = (int(corner[0]), int(corner[1]))
-    img = cv.line(img, tuplecorner,
-                  (int(imgpts0[0]), int(imgpts0[1])), (255, 0, 0), 5)
-    img = cv.line(img, tuplecorner,
-                  (int(imgpts1[0]), int(imgpts1[1])), (0, 255, 0), 5)
-    img = cv.line(img, tuplecorner,
-                  (int(imgpts2[0]), int(imgpts2[1])), (0, 0, 255), 5)
-    return img
+    tuplecorner2 = (int(corner[4]), int(corner[5]))
+    print(int(imgpts0[0]), int(imgpts0[1]))
+    if(int(corner[0])-int(corner[4])) > 0:
+        test = int(corner[0])-int(corner[4])
+    else:
+        test = int(corner[4])-int(corner[0])
+    img = cv.rectangle(img, tuplecorner, tuplecorner2, (255, 0, 0), 5)
+    img = cv.circle(img, tuplecorner, test, (0, 0, 255), -1)
+    # img = cv.line(img, tuplecorner,
+    #               (int(imgpts0[0]), int(imgpts0[1])), (255, 0, 0), 5)
+    # img = cv.line(img, tuplecorner,
+    #               (int(imgpts1[0]), int(imgpts1[1])), (0, 255, 0), 5)
+    # img = cv.line(img, tuplecorner,
+    #               (int(imgpts2[0]), int(imgpts2[1])), (0, 0, 255), 5)
+    # return img
 
 
 axis = np.float32([[3, 0, 0], [0, 3, 0], [0, 0, -3]]).reshape(-1, 3)
@@ -35,15 +43,15 @@ axisx = 0
 axisy = 0
 while True:
     _, frame = cap.read()
-    commade = input("Appuyer sur une touche pour continuer")
-    if commade == "q":
-        axisx += -0.05
-    if commade == "d":
-        axisx += 0.05
-    if commade == "z":
-        axisy += -0.05
-    if commade == "s":
-        axisy += 0.05
+    # commade = input("Appuyer sur une touche pour continuer")
+    # if commade == "q":
+    #     axisx += -0.05
+    # if commade == "d":
+    #     axisx += 0.05
+    # if commade == "z":
+    #     axisy += -0.05
+    # if commade == "s":
+    #     axisy += 0.05
 
     # frame = cv.resize(frame, None, fx=0.7, fy=0.7, interpolation=cv.INTER_AREA)
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
@@ -60,8 +68,10 @@ while True:
             #X = 0,05 = 10cm
             #Y = 0,05 = 10cm
             #Z = 0,05 = 10cm
-            cv.drawFrameAxes(frame, mtx, dist, rvec[i], tvec[i], 0.05)
-        #frame = draw(frame, corners, rejectedImgPoints)
+            #cv.drawFrameAxes(frame, mtx, dist, rvec[i], tvec[i], 0.05)
+            imgpts, jac = cv.projectPoints(axis, rvec[i], tvec[i], mtx, dist)
+            print(frame.shape)
+            draw(frame, corners, imgpts)
 
     test = test +0.005
     cpt = cpt + 1
