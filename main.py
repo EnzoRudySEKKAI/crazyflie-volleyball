@@ -7,39 +7,33 @@ with np.load('calibration.npz') as X:
 
 def draw(img, corners, imgpts):
     corner = tuple(corners[0].ravel())
-    print(tuple(imgpts[0].ravel()))
-    img = cv.line(img, (int(corner[0]), int(corner[1])),
-                  (int(tuple(imgpts[0].ravel())[0]), int(tuple(imgpts[0].ravel())[1])), (255, 0, 0), 5)
-    img = cv.line(img, (int(corner[0]), int(corner[1])),
-                  (int(tuple(imgpts[1].ravel())[0]), int(tuple(imgpts[1].ravel())[1])), (0, 255, 0), 5)
-    img = cv.line(img, (int(corner[0]), int(corner[1])),
-                  (int(tuple(imgpts[2].ravel())[0]), int(tuple(imgpts[2].ravel())[1])), (0, 0, 255), 5)
+    imgpts0 = tuple(imgpts[0].ravel())
+    imgpts1 = tuple(imgpts[1].ravel())
+    imgpts2 = tuple(imgpts[2].ravel())
+    tuplecorner = (int(corner[0]), int(corner[1]))
+    img = cv.line(img, tuplecorner,
+                  (int(imgpts0[0]), int(imgpts0[1])), (255, 0, 0), 5)
+    img = cv.line(img, tuplecorner,
+                  (int(imgpts1[0]), int(imgpts1[1])), (0, 255, 0), 5)
+    img = cv.line(img, tuplecorner,
+                  (int(imgpts2[0]), int(imgpts2[1])), (0, 0, 255), 5)
     return img
 
 
-criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.1)
 
 objp = np.zeros((6 * 7, 3), np.float32)
 objp[:, :2] = np.mgrid[0:7, 0:6].T.reshape(-1, 2)
 axis = np.float32([[3, 0, 0], [0, 3, 0], [0, 0, -3]]).reshape(-1, 3)
 
 cap = cv.VideoCapture(0)
-cap.set(3, 1280)
-cap.set(4, 720)
 
 while True:
     _, frame = cap.read()
+    # frame = cv.resize(frame, None, fx=0.7, fy=0.7, interpolation=cv.INTER_AREA)
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
 
-    # undistort
-    h, w = gray.shape[:2]
-    newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
-    dst = cv.undistort(gray, mtx, dist, None, newcameramtx)
-    # crop the image
-    x, y, w, h = roi
-    dst = dst[y:y + h, x:x + w]
-    frame = dst
-    # frame=gray
+    frame = gray
 
     ret, corners = cv.findChessboardCorners(frame, (7, 6), None)
     if ret:
