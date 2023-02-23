@@ -37,26 +37,11 @@ def draw(img, corners, imgpts):
 axis = np.float32([[3, 0, 0], [0, 3, 0], [0, 0, -3]]).reshape(-1, 3)
 
 cap = cv.VideoCapture(0)
-cpt = 0
-test = -1
 axisx = 0
 axisy = 0
 axisz = 0
 while True:
     _, frame = cap.read()
-    commade = input("Appuyer sur une touche pour continuer")
-    if commade == "q":
-        axisx += -0.05
-    if commade == "d":
-        axisx += 0.05
-    if commade == "z":
-        axisy += -0.05
-    if commade == "s":
-        axisy += 0.05
-    if commade == "a":
-        axisz += -0.05
-    if commade == "e":
-        axisz += 0.05
 
 
     # frame = cv.resize(frame, None, fx=0.7, fy=0.7, interpolation=cv.INTER_AREA)
@@ -75,13 +60,10 @@ while True:
             #X = 0,05 = 10cm
             #Y = 0,05 = 10cm
             #Z = 0,05 = 10cm
-            cv.drawFrameAxes(frame, mtx, dist, rvec[i], tvec[i], 0.05)
-            # imgpts, jac = cv.projectPoints(axis, rvec[i], tvec[i], mtx, dist)
-            # print(frame.shape)
-            # draw(frame, corners, imgpts)
+            imgpts, jac = cv.projectPoints(axis, rvec[i], tvec[i], mtx, dist)
+            print(frame.shape)
+            draw(frame, corners, imgpts)
 
-    test = test +0.005
-    cpt = cpt + 1
 
     cv.imshow('frame', frame)
     if cv.waitKey(1) & 0xFF == ord('q'):
