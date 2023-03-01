@@ -18,7 +18,6 @@ def draw(img, corners, imgpts):
     imgpts2 = tuple(imgpts[2].ravel())
     tuplecorner = (int(corner[0]), int(corner[1]))
     tuplecorner2 = (int(corner[4]), int(corner[5]))
-    print(int(imgpts0[0]), int(imgpts0[1]))
     if(int(corner[0])-int(corner[4])) > 0:
         test = int(corner[0])-int(corner[4])
     else:
@@ -50,10 +49,8 @@ while True:
     corners, ids, rejectedImgPoints = detector.detectMarkers(gray)
     if np.all(ids != None):
         rvec, tvec, _ = cv.aruco.estimatePoseSingleMarkers(corners, 0.05, mtx, dist)
-        print(ids)
         for i in range(0, ids.size):
-            print(ids[i])
-            print(rvec[i], tvec[i])
+
             tvec[i][0][0] = tvec[i][0][0]+axisx
             tvec[i][0][1] = tvec[i][0][1]+axisy
             tvec[i][0][2] = tvec[i][0][2]+axisz
@@ -61,7 +58,7 @@ while True:
             #Y = 0,05 = 10cm
             #Z = 0,05 = 10cm
             imgpts, jac = cv.projectPoints(axis, rvec[i], tvec[i], mtx, dist)
-            print(frame.shape)
+            print(imgpts)
             draw(frame, corners, imgpts)
 
 

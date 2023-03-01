@@ -11,18 +11,6 @@ with np.load('calibration.npz') as X:
     mtx, dist, _, _ = [X[i] for i in ('mtx', 'dist', 'rvecs', 'tvecs')]
 
 
-def drawcube(img, corners, imgpts):
-    imgpts = np.int32(imgpts).reshape(-1, 2)
-    # draw ground floor in green
-    img = cv.drawContours(img, [imgpts[:4]], -1, (0, 255, 0), -3)
-    # draw pillars in blue color
-    for i, j in zip(range(4), range(4, 8)):
-        img = cv.line(img, tuple(imgpts[i]), tuple(imgpts[j]), (255), 3)
-    # draw top layer in red color
-    img = cv.drawContours(img, [imgpts[4:]], -1, (0, 0, 255), 3)
-    return img
-
-
 def getTranslationMatrix(tvec):
     T = np.identity(n=4)
     T[0:3, 3] = tvec
@@ -64,6 +52,7 @@ def relativeTransformMatrix(rotation, translation):
 axis = np.float32([[3, 0, 0], [0, 3, 0], [0, 0, -3]]).reshape(-1, 3)
 axiscube = np.float32([[0, 0, 0], [0, 3, 0], [3, 3, 0], [3, 0, 0],
                        [0, 0, -3], [0, 3, -3], [3, 3, -3], [3, 0, -3]])
+
 cap = cv.VideoCapture(0)
 
 plus = True
@@ -91,7 +80,6 @@ while True:
     corners, ids, rejectedImgPoints = detector.detectMarkers(gray)
     if np.all(ids != None):
         rvec, tvec, _ = cv.aruco.estimatePoseSingleMarkers(corners, 0.1, mtx, dist)
-        print(ids)
 
         rvec = rvec[0][0]
         tvec = tvec[0][0]
@@ -109,13 +97,8 @@ while True:
         # Extract rotation matrix and translation vector out of result and then display
         rmat = transformMatrix[:3, :3]
         tmat = transformMatrix[:3, 3:]
-        print(tmat)
 
         cv.drawFrameAxes(frame, mtx, dist, rmat, tmat, 0.1)
-        drawcube(frame, corners, axiscube)
-        # imgpts, jac = cv.projectPoints(axis, rvec[i], tvec[i], mtx, dist)
-        # print(frame.shape)
-        # draw(frame, corners, imgpts)
 
     # Déplacement en y
     if axisy >= maxy and plus:
