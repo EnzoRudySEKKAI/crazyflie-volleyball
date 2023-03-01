@@ -59,7 +59,7 @@ while True:
             print(rvec[i], tvec[i])
             tvec[i][0][0] = tvec[i][0][0]
             tvec[i][0][1] = tvec[i][0][1]
-            tvec[i][0][2] = tvec[i][0][2]
+            tvec[i][0][2] = tvec[i][0][2]-0.8
             #X = 0,05 = 10cm
             #Y = 0,05 = 10cm
             #Z = 0,05 = 10cm

@@ -1,9 +1,5 @@
-from math import cos, sin
-
 import numpy as np
 import cv2 as cv
-
-
 
 # aruco detection
 dictionary = cv.aruco.getPredefinedDictionary(cv.aruco.DICT_4X4_250)
@@ -15,15 +11,29 @@ with np.load('calibration.npz') as X:
     mtx, dist, _, _ = [X[i] for i in ('mtx', 'dist', 'rvecs', 'tvecs')]
 
 
+def drawcube(img, corners, imgpts):
+    imgpts = np.int32(imgpts).reshape(-1, 2)
+    # draw ground floor in green
+    img = cv.drawContours(img, [imgpts[:4]], -1, (0, 255, 0), -3)
+    # draw pillars in blue color
+    for i, j in zip(range(4), range(4, 8)):
+        img = cv.line(img, tuple(imgpts[i]), tuple(imgpts[j]), (255), 3)
+    # draw top layer in red color
+    img = cv.drawContours(img, [imgpts[4:]], -1, (0, 0, 255), 3)
+    return img
+
+
 def getTranslationMatrix(tvec):
     T = np.identity(n=4)
     T[0:3, 3] = tvec
     return T
 
+
 def getTransformMatrix(rvec, tvec):
     mat = getTranslationMatrix(tvec)
     mat[:3, :3] = cv.Rodrigues(rvec)[0]
     return mat
+
 
 def relativeTransformMatrix(rotation, translation):
     xC, xS = np.cos(rotation[0]), np.sin(rotation[0])
@@ -52,17 +62,28 @@ def relativeTransformMatrix(rotation, translation):
 
 
 axis = np.float32([[3, 0, 0], [0, 3, 0], [0, 0, -3]]).reshape(-1, 3)
-
+axiscube = np.float32([[0, 0, 0], [0, 3, 0], [3, 3, 0], [3, 0, 0],
+                       [0, 0, -3], [0, 3, -3], [3, 3, -3], [3, 0, -3]])
 cap = cv.VideoCapture(0)
-cpt = 0
-test = -1
-axisx = 0.2
+
+plus = True
+plusz = False
+
+maxx = 0.2
+minx = -0.2
+
+maxy = 0.2
+miny = -0.2
+
+maxz = -0.1
+minz = -0.05
+
+axisx = 0
 axisy = 0
-axisz =-0.2
+axisz = -0.1
+
 while True:
     _, frame = cap.read()
-
-
 
     # frame = cv.resize(frame, None, fx=0.7, fy=0.7, interpolation=cv.INTER_AREA)
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
@@ -91,10 +112,31 @@ while True:
         print(tmat)
 
         cv.drawFrameAxes(frame, mtx, dist, rmat, tmat, 0.1)
+        drawcube(frame, corners, axiscube)
         # imgpts, jac = cv.projectPoints(axis, rvec[i], tvec[i], mtx, dist)
         # print(frame.shape)
         # draw(frame, corners, imgpts)
 
+    # Déplacement en y
+    if axisy >= maxy and plus:
+        plus = False
+    if axisy <= miny and not plus:
+        plus = True
+    if plus:
+        axisy += 0.01
+    else:
+        axisy -= 0.01
+
+    # Déplacement en Z
+    if axisz >= minz and not plusz:
+        plusz = True
+    if axisz <= maxz and plusz:
+        plusz = False
+
+    if plusz:
+        axisz -= 0.0025
+    else:
+        axisz += 0.0025
 
     cv.imshow('frame', frame)
     if cv.waitKey(1) & 0xFF == ord('q'):
