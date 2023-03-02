@@ -7,7 +7,7 @@ parameters = cv.aruco.DetectorParameters()
 detector = cv.aruco.ArucoDetector(dictionary, parameters)
 
 # camera calibration
-with np.load('calibration.npz') as X:
+with np.load('../calibration/calibration.npz') as X:
     mtx, dist, _, _ = [X[i] for i in ('mtx', 'dist', 'rvecs', 'tvecs')]
 
 

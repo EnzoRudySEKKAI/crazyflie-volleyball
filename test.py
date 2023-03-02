@@ -1,55 +1,77 @@
-import cv2
 import numpy as np
+import cv2 as cv
 
-# Définition des paramètres du marqueur ArUco
-dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_250)
-parameters = cv2.aruco.DetectorParameters()
-detector = cv2.aruco.ArucoDetector(dictionary, parameters)
+# aruco detection
+dictionary = cv.aruco.getPredefinedDictionary(cv.aruco.DICT_4X4_250)
+parameters = cv.aruco.DetectorParameters()
+detector = cv.aruco.ArucoDetector(dictionary, parameters)
 
-with np.load('calibration.npz') as X:
+# camera calibration
+with np.load('calibration/calibration.npz') as X:
     mtx, dist, _, _ = [X[i] for i in ('mtx', 'dist', 'rvecs', 'tvecs')]
 
-# Définition de la couleur de la balle (ici rouge)
-ball_color = (0, 0, 255)
 
-# Ouverture de la webcam
-cap = cv2.VideoCapture(0)
+def draw(img, corners, imgpts):
+    corner = tuple(corners[0].ravel())
+    imgpts0 = tuple(imgpts[0].ravel())
+    imgpts1 = tuple(imgpts[1].ravel())
+    imgpts2 = tuple(imgpts[2].ravel())
+    tuplecorner = (int(corner[0]), int(corner[1]))
+    tuplecorner2 = (int(corner[4]), int(corner[5]))
+    print(int(imgpts0[0]), int(imgpts0[1]))
+    if(int(corner[0])-int(corner[4])) > 0:
+        test = int(corner[0])-int(corner[4])
+    else:
+        test = int(corner[4])-int(corner[0])
+    img = cv.rectangle(img, tuplecorner, tuplecorner2, (255, 0, 0), 5)
+    img = cv.circle(img, tuplecorner, test, (0, 0, 255), -1)
+    # img = cv.line(img, tuplecorner,
+    #               (int(imgpts0[0]), int(imgpts0[1])), (255, 0, 0), 5)
+    # img = cv.line(img, tuplecorner,
+    #               (int(imgpts1[0]), int(imgpts1[1])), (0, 255, 0), 5)
+    # img = cv.line(img, tuplecorner,
+    #               (int(imgpts2[0]), int(imgpts2[1])), (0, 0, 255), 5)
+    # return img
 
+
+axis = np.float32([[3, 0, 0], [0, 3, 0], [0, 0, -3]]).reshape(-1, 3)
+
+cap = cv.VideoCapture(0)
+cpt = 0
+test = -1
+axisx = 0
+axisy = 0
+axisz = 0
 while True:
-    # Lecture d'une image depuis la webcam
-    ret, frame = cap.read()
+    _, frame = cap.read()
 
-    # Détection des marqueurs ArUco dans l'image
-    corners, ids, rejected = detector.detectMarkers(frame)
 
-    # Si au moins un marqueur a été détecté, dessiner une balle sur celui-ci
-    if ids is not None:
-        # Récupération des coins du marqueur détecté
-        marker_corners = corners[0][0]
 
-        # Calcul de la position et de l'orientation du marqueur
-        rvec, tvec, _ = cv2.aruco.estimatePoseSingleMarkers([marker_corners], 0.05, mtx, dist)
-        rotM = cv2.Rodrigues(rvec)[0]
+    # frame = cv.resize(frame, None, fx=0.7, fy=0.7, interpolation=cv.INTER_AREA)
+    gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    # aruco detection
+    corners, ids, rejectedImgPoints = detector.detectMarkers(gray)
+    if np.all(ids != None):
+        rvec, tvec, _ = cv.aruco.estimatePoseSingleMarkers(corners, 0.1, mtx, dist)
+        print(ids)
+        for i in range(0, ids.size):
+            print(ids[i])
+            print(rvec[i], tvec[i])
+            tvec[i][0][0] = tvec[i][0][0]
+            tvec[i][0][1] = tvec[i][0][1]
+            tvec[i][0][2] = tvec[i][0][2]-0.8
+            #X = 0,05 = 10cm
+            #Y = 0,05 = 10cm
+            #Z = 0,05 = 10cm
+            cv.drawFrameAxes(frame, mtx, dist, rvec[i], tvec[i], 0.1)
+            # imgpts, jac = cv.projectPoints(axis, rvec[i], tvec[i], mtx, dist)
+            # print(frame.shape)
+            # draw(frame, corners, imgpts)
 
-        # Dessiner un cercle dans l'espace 3D sur le marqueur détecté
-        center_3d = np.array([[0, 0, 0]], dtype=np.float32)
-        center_3d[0][1] = -0.025  # La balle est située légèrement en dessous du marqueur
-        center_3d = np.matmul(center_3d, rotM.T) + tvec
-        center_2d, _ = cv2.projectPoints(center_3d, rvec, tvec, mtx, dist)
-        center_2d = center_2d.astype(int)[0]
-        radius = int(min(marker_corners[1, 0] - marker_corners[0, 0], marker_corners[3, 1] - marker_corners[0, 1]) / 2)
 
-        # Vérifier que center_2d est une liste/tuple de longueur 2
-        if len(center_2d) == 2:
-            cv2.circle(frame, tuple(center_2d), radius, ball_color, -1)
-
-    # Afficher l'image résultante dans une fenêtre
-    cv2.imshow('Frame', frame)
-
-    # Attendre une touche pour quitter
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    cv.imshow('frame', frame)
+    if cv.waitKey(1) & 0xFF == ord('q'):
         break
 
-# Fermer la webcam et détruire les fenêtres
 cap.release()
-cv2.destroyAllWindows()
+cv.destroyAllWindows()
