@@ -6,6 +6,23 @@ dictionary = cv.aruco.getPredefinedDictionary(cv.aruco.DICT_4X4_250)
 parameters = cv.aruco.DetectorParameters()
 detector = cv.aruco.ArucoDetector(dictionary, parameters)
 
+# Variable pour le déplacement
+plus = True
+plusz = False
+
+maxx = 0.2
+minx = -0.2
+
+maxy = 0.2
+miny = -0.2
+
+maxz = -0.1
+minz = -0.05
+
+axisx = 0
+axisy = 0
+axisz = -0.1
+
 # camera calibration
 with np.load('../calibration/calibration.npz') as X:
     mtx, dist, _, _ = [X[i] for i in ('mtx', 'dist', 'rvecs', 'tvecs')]
@@ -50,26 +67,8 @@ def relativeTransformMatrix(rotation, translation):
 
 
 axis = np.float32([[3, 0, 0], [0, 3, 0], [0, 0, -3]]).reshape(-1, 3)
-axiscube = np.float32([[0, 0, 0], [0, 3, 0], [3, 3, 0], [3, 0, 0],
-                       [0, 0, -3], [0, 3, -3], [3, 3, -3], [3, 0, -3]])
 
 cap = cv.VideoCapture(0)
-
-plus = True
-plusz = False
-
-maxx = 0.2
-minx = -0.2
-
-maxy = 0.2
-miny = -0.2
-
-maxz = -0.1
-minz = -0.05
-
-axisx = 0
-axisy = 0
-axisz = -0.1
 
 while True:
     _, frame = cap.read()
@@ -95,10 +94,10 @@ while True:
         transformMatrix = np.dot(transformMatrix, relativeTransformMatrice)
 
         # Extract rotation matrix and translation vector out of result and then display
-        rmat = transformMatrix[:3, :3]
-        tmat = transformMatrix[:3, 3:]
+        rmat_relative = transformMatrix[:3, :3]
+        tmat_relative = transformMatrix[:3, 3:]
 
-        cv.drawFrameAxes(frame, mtx, dist, rmat, tmat, 0.1)
+        cv.drawFrameAxes(frame, mtx, dist, rmat_relative, tmat_relative, 0.1)
 
     # Déplacement en y
     if axisy >= maxy and plus:
