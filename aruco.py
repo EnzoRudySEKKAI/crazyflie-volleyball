@@ -93,7 +93,8 @@ if __name__ == "__main__":
 
                 # Get the transform matrix we want to apply to the obtained marker position
                 # E.g. rotate 180 deg (PI) along Y and then translate -10 cm along X
-                relative_transform_matrix_ = relative_transform_matrix([0, np.pi, 0], [axis_x, axis_y, axis_z])
+                #relative_transform_matrix_ = relative_transform_matrix([0, np.pi, 0], [axis_x, axis_y, axis_z])
+                relative_transform_matrix_ = relative_transform_matrix([0, np.pi, 0], [0.1, -0.1, -0.1])
 
                 # Now apply the transform to the original matrix by simply dot multiplying them
                 transform_matrix = np.dot(transform_matrix, relative_transform_matrix_)
@@ -102,18 +103,19 @@ if __name__ == "__main__":
                 rmat_relative = transform_matrix[:3, :3]
                 tmat_relative = transform_matrix[:3, 3:]
                 
-                # Perspective projection equations
-
+                # Perspective projection equations with depth
                 # 3D point in the marker coordinate system
-                p = np.array([0, 0, 0, 1]).reshape(4, 1)
+                p = np.array([0, 0, 0]).reshape(3, 1)
                 # 3D point in the camera coordinate system
                 p_camera = np.dot(rmat_relative, p) + tmat_relative
                 # 2D point in the image plane
                 p_image = np.dot(mtx, p_camera)
                 # Normalized 2D point
                 p_image_normalized = p_image / p_image[2]
-                # Display the point
-                cv.circle(frame, (int(p_image_normalized[0]), int(p_image_normalized[1])), 5, (0, 0, 255), -1)
+                taille = abs(100-int(p_camera[2]*100))
+                print(p_camera)
+                cv.circle(frame, (int(p_image_normalized[0]), int(p_image_normalized[1])), taille, (0, 0, 255), -1)
+
 
                 cv.drawFrameAxes(frame, mtx, dist, rmat_relative, tmat_relative, 0.1)
 
