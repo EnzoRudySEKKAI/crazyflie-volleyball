@@ -40,21 +40,6 @@ def relative_transform_matrix(rotation, translation):
     return np.dot(rotate_z_matrix, np.dot(rotate_y_matrix, np.dot(rotate_x_matrix, translate_matrix)))
 
 
-def draw(img, corners, imgpts):
-    print(corners)
-    corner = tuple(corners[0].ravel())
-    imgpts0 = tuple(imgpts[0].ravel())
-    imgpts1 = tuple(imgpts[1].ravel())
-    imgpts2 = tuple(imgpts[2].ravel())
-    tuplecorner = (int(corner[0]), int(corner[1]))
-    tuplecorner2 = (int(corner[4]), int(corner[5]))
-    if (int(corner[0]) - int(corner[4])) > 0:
-        test = int(corner[0]) - int(corner[4])
-    else:
-        test = int(corner[4]) - int(corner[0])
-    img = cv.circle(img, tuplecorner, test, (0, 0, 255), -1)
-
-
 if __name__ == "__main__":
 
     # aruco detection
@@ -117,11 +102,18 @@ if __name__ == "__main__":
                 rmat_relative = transform_matrix[:3, :3]
                 tmat_relative = transform_matrix[:3, 3:]
                 
-                # cv.circle(img,(447,63), 63, (0,0,255), -1)
-                
-                imgpts, jac = cv.projectPoints(axis, rmat_relative, tmat_relative, mtx, dist)
-                print(frame.shape)
-                draw(frame, corners, imgpts)
+                # Perspective projection equations
+
+                # 3D point in the marker coordinate system
+                p = np.array([0, 0, 0, 1]).reshape(4, 1)
+                # 3D point in the camera coordinate system
+                p_camera = np.dot(rmat_relative, p) + tmat_relative
+                # 2D point in the image plane
+                p_image = np.dot(mtx, p_camera)
+                # Normalized 2D point
+                p_image_normalized = p_image / p_image[2]
+                # Display the point
+                cv.circle(frame, (int(p_image_normalized[0]), int(p_image_normalized[1])), 5, (0, 0, 255), -1)
 
                 cv.drawFrameAxes(frame, mtx, dist, rmat_relative, tmat_relative, 0.1)
 
