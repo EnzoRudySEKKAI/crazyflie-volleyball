@@ -1,7 +1,6 @@
 import numpy as np
 import cv2 as cv
 
-
 def get_translation_matrix(tvec):
     t = np.identity(n=4)
     t[0:3, 3] = tvec
@@ -47,6 +46,13 @@ if __name__ == "__main__":
     parameters = cv.aruco.DetectorParameters()
     detector = cv.aruco.ArucoDetector(dictionary, parameters)
 
+    ball_speed_m_s = 1
+    ball_color = (0, 255, 255)
+    ball_size = 3
+
+    cam_fps = 30
+
+    aruco_size = 0.1
     # Variable pour le déplacement
     plus = True
     plus_z = False
@@ -54,15 +60,15 @@ if __name__ == "__main__":
     max_x = 0.2
     min_x = -0.2
 
-    max_y = 0.2
-    min_y = -0.2
+    max_y = 1
+    min_y = -1
 
-    max_z = -0.1
-    min_z = -0.05
+    max_z = -0.3
+    min_z = -0.1
 
     axis_x = 0
     axis_y = 0
-    axis_z = -0.1
+    axis_z = max_z
 
     # camera calibration
     with np.load('calibration/calibration.npz') as X:
@@ -77,13 +83,12 @@ if __name__ == "__main__":
         
         if isinstance(frame, np.ndarray) and frame.any():
 
-            # frame = cv.resize(frame, None, fx=0.7, fy=0.7, interpolation=cv.INTER_AREA)
             gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
             # aruco detection
             
             corners, ids, rejectedImgPoints = detector.detectMarkers(gray)
             if np.all(ids is not None):
-                rvec, tvec, _ = cv.aruco.estimatePoseSingleMarkers(corners, 0.1, mtx, dist)
+                rvec, tvec, _ = cv.aruco.estimatePoseSingleMarkers(corners, aruco_size, mtx, dist)
 
                 rvec = rvec[0][0]
                 tvec = tvec[0][0]
@@ -93,8 +98,8 @@ if __name__ == "__main__":
 
                 # Get the transform matrix we want to apply to the obtained marker position
                 # E.g. rotate 180 deg (PI) along Y and then translate -10 cm along X
-                #relative_transform_matrix_ = relative_transform_matrix([0, np.pi, 0], [axis_x, axis_y, axis_z])
-                relative_transform_matrix_ = relative_transform_matrix([0, np.pi, 0], [0.1, -0.1, -0.1])
+                # relative_transform_matrix_ = relative_transform_matrix([0, np.pi, 0], [axis_x, axis_y, axis_z])
+                relative_transform_matrix_ = relative_transform_matrix([0, np.pi, 0], [0, 0, -1])
 
                 # Now apply the transform to the original matrix by simply dot multiplying them
                 transform_matrix = np.dot(transform_matrix, relative_transform_matrix_)
@@ -112,10 +117,10 @@ if __name__ == "__main__":
                 p_image = np.dot(mtx, p_camera)
                 # Normalized 2D point
                 p_image_normalized = p_image / p_image[2]
-                taille = abs(100-int(p_camera[2]*100))
-                print(p_camera)
-                cv.circle(frame, (int(p_image_normalized[0]), int(p_image_normalized[1])), taille, (0, 0, 255), -1)
 
+                scale = int(ball_size / p_camera[2] * 100)
+
+                cv.circle(frame, (int(p_image_normalized[0]), int(p_image_normalized[1])), scale, ball_color, -1)
 
                 cv.drawFrameAxes(frame, mtx, dist, rmat_relative, tmat_relative, 0.1)
 
@@ -125,9 +130,9 @@ if __name__ == "__main__":
             if axis_y <= min_y and not plus:
                 plus = True
             if plus:
-                axis_y += 0.01
+                axis_y += ball_speed_m_s / cam_fps
             else:
-                axis_y -= 0.01
+                axis_y -= ball_speed_m_s / cam_fps
 
             # Déplacement en Z
             if axis_z >= min_z and not plus_z:
@@ -135,10 +140,13 @@ if __name__ == "__main__":
             if axis_z <= max_z and plus_z:
                 plus_z = False
 
+            #(MaxZ - MinZ)/(abs(0-maxY))/(vitesseBalle/30)
             if plus_z:
-                axis_z -= 0.0025
+                #axis_z -= 0.0025
+                axis_z -= abs(max_z-min_z)/(abs(0-max_y) / (ball_speed_m_s / cam_fps))
             else:
-                axis_z += 0.0025
+                #axis_z += 0.0025
+                axis_z += abs(max_z-min_z)/(abs(0-max_y) / (ball_speed_m_s / cam_fps))
 
             cv.imshow('frame', frame)
         if cv.waitKey(1) & 0xFF == ord('q'):
