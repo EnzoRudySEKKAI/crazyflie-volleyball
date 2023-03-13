@@ -1,6 +1,7 @@
 import numpy as np
 import cv2 as cv
 
+
 def get_translation_matrix(tvec):
     t = np.identity(n=4)
     t[0:3, 3] = tvec
@@ -46,50 +47,69 @@ if __name__ == "__main__":
     parameters = cv.aruco.DetectorParameters()
     detector = cv.aruco.ArucoDetector(dictionary, parameters)
 
+    # ball
     ball_speed_m_s = 1
     ball_color = (0, 255, 255)
     ball_size = 3
 
+    # camera
     cam_fps = 30
 
+    # aruco
     aruco_size = 0.1
-    # Variable pour le déplacement
+
+    # Variable for the movement
+
+    # Varibale to know if the ball is going to a side or another
     plus = True
+
+    # Varibale to know if the ball is going upper or lower
     plus_z = False
 
+    # Boundaries of X axis
     max_x = 0.2
     min_x = -0.2
 
+    # Boundaries of Y axis
     max_y = 1
     min_y = -1
 
+    # Boundaries of Z axis
     max_z = -0.3
     min_z = -0.1
 
+    # Initial position of the ball
     axis_x = 0
     axis_y = 0
     axis_z = max_z
 
-    # camera calibration
+    # Get the camera calibration data
     with np.load('calibration/calibration.npz') as X:
         mtx, dist, _, _ = [X[i] for i in ('mtx', 'dist', 'rvecs', 'tvecs')]
 
+    # Define the axis
     axis = np.float32([[3, 0, 0], [0, 3, 0], [0, 0, -3]]).reshape(-1, 3)
 
+    # Start the video capture
     cap = cv.VideoCapture(0)
-    
+
     while True:
         _, frame = cap.read()
-        
+
+        # Check if the frame is valid
         if isinstance(frame, np.ndarray) and frame.any():
 
             gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-            # aruco detection
-            
+
+            # Detect the markers
             corners, ids, rejectedImgPoints = detector.detectMarkers(gray)
+
             if np.all(ids is not None):
+
+                # Estimate the pose of the markers
                 rvec, tvec, _ = cv.aruco.estimatePoseSingleMarkers(corners, aruco_size, mtx, dist)
 
+                # Get the first marker found
                 rvec = rvec[0][0]
                 tvec = tvec[0][0]
 
@@ -98,6 +118,7 @@ if __name__ == "__main__":
 
                 # Get the transform matrix we want to apply to the obtained marker position
                 # E.g. rotate 180 deg (PI) along Y and then translate -10 cm along X
+
                 # relative_transform_matrix_ = relative_transform_matrix([0, np.pi, 0], [axis_x, axis_y, axis_z])
                 relative_transform_matrix_ = relative_transform_matrix([0, np.pi, 0], [0, 0, -1])
 
@@ -107,7 +128,7 @@ if __name__ == "__main__":
                 # Extract rotation matrix and translation vector out of result and then display
                 rmat_relative = transform_matrix[:3, :3]
                 tmat_relative = transform_matrix[:3, 3:]
-                
+
                 # Perspective projection equations with depth
                 # 3D point in the marker coordinate system
                 p = np.array([0, 0, 0]).reshape(3, 1)
@@ -118,13 +139,15 @@ if __name__ == "__main__":
                 # Normalized 2D point
                 p_image_normalized = p_image / p_image[2]
 
-                scale = int(ball_size / p_camera[2] * 100)
+                # Scale the ball size depending on the distance
+                ball_scale = int(ball_size / p_camera[2] * 100)
 
-                cv.circle(frame, (int(p_image_normalized[0]), int(p_image_normalized[1])), scale, ball_color, -1)
+                # Draw the ball
+                cv.circle(frame, (int(p_image_normalized[0]), int(p_image_normalized[1])), ball_scale, ball_color, -1)
 
                 cv.drawFrameAxes(frame, mtx, dist, rmat_relative, tmat_relative, 0.1)
 
-            # Déplacement en y
+            # Movement of the ball on the Y axis
             if axis_y >= max_y and plus:
                 plus = False
             if axis_y <= min_y and not plus:
@@ -134,19 +157,17 @@ if __name__ == "__main__":
             else:
                 axis_y -= ball_speed_m_s / cam_fps
 
-            # Déplacement en Z
+            # Movement of the ball on the Z axis
             if axis_z >= min_z and not plus_z:
                 plus_z = True
             if axis_z <= max_z and plus_z:
                 plus_z = False
-
-            #(MaxZ - MinZ)/(abs(0-maxY))/(vitesseBalle/30)
             if plus_z:
-                #axis_z -= 0.0025
-                axis_z -= abs(max_z-min_z)/(abs(0-max_y) / (ball_speed_m_s / cam_fps))
+                # axis_z -= 0.0025
+                axis_z -= abs(max_z - min_z) / (abs(0 - max_y) / (ball_speed_m_s / cam_fps))
             else:
-                #axis_z += 0.0025
-                axis_z += abs(max_z-min_z)/(abs(0-max_y) / (ball_speed_m_s / cam_fps))
+                # axis_z += 0.0025
+                axis_z += abs(max_z - min_z) / (abs(0 - max_y) / (ball_speed_m_s / cam_fps))
 
             cv.imshow('frame', frame)
         if cv.waitKey(1) & 0xFF == ord('q'):
