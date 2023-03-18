@@ -10,33 +10,32 @@ def get_translation_matrix(tvec):
     tr[0:3, 3] = tvec
     return tr
 
-def parabolic_trajectory(start, end, speed, max_height, min_height, num_positions=80):
+
+def parabolic_trajectory(start, end, max_height, min_height, frames):
     # Calculate the displacement between start and end points
     displacement = [end[i] - start[i] for i in range(3)]
 
     distance = math.hypot(displacement[0], displacement[1], displacement[2])
 
-    # Calculate the time it would take to travel the displacement at the given speed
-    time = distance / speed
-    # Calculate the acceleration needed to reach the max height in half of the total time
-    acceleration = (max_height - start[2]) / (time / 2) ** 2
-    # Calculate the vertical velocity needed to reach the max height at half of the total time
-    vert_velocity = acceleration * (time / 2)
+    # Calculate the acceleration needed to reach the max height in half of the total distance
+    acceleration = (max_height - start[2]) / (distance / 2) ** 2
+    # Calculate the vertical velocity needed to reach the max height at half of the total distance
+    vert_velocity = acceleration * (distance / 2)
     # Calculate the time interval between each position
-    interval = 1 / num_positions * time
+    interval = 1 / frames * distance
     # Calculate the x and z components of the velocity
-    horiz_velocity = distance / time  # (time/2)
+    horiz_velocity = 1  #
     x_velocity = displacement[0] / distance * horiz_velocity
     z_velocity = displacement[1] / distance * horiz_velocity
     # Calculate the positions for each time interval
     positions = []
-    for i in range(num_positions):
+    for i in range(frames):
         t = i * interval
         x = start[0] + x_velocity * t
-        y = start[2] + vert_velocity * t - 0.5 * acceleration * t ** 2
-        z = start[1] + z_velocity * t - 0.02
-        if displacement[1] != 0:
-            y_correction = displacement[2] * (t / time)
+        y = start[2] + vert_velocity * t - 0.5 * acceleration * t ** 2 - 0.01
+        z = start[1] + z_velocity * t
+        if displacement[2] != 0:
+            y_correction = displacement[2] * (t / distance)
             y += y_correction
         # Check if the y position is below the minimum height
         if y < min_height:
@@ -47,6 +46,7 @@ def parabolic_trajectory(start, end, speed, max_height, min_height, num_position
         positions.append((x, z, y))
     positions.append((end[0], end[1], end[2]))
     return positions
+
 
 def get_transform_matrix(rvec, tvec):
     mat = get_translation_matrix(tvec)
@@ -88,7 +88,6 @@ if __name__ == "__main__":
     detector = cv.aruco.ArucoDetector(dictionary, parameters)
 
     # ball
-    ball_speed_m_s = 1
     ball_color = (0, 255, 255)
     ball_size = 3
 
@@ -101,8 +100,8 @@ if __name__ == "__main__":
     # Variable for the movement
 
     # Varibale to know if the ball is going to a side or another
-    joueur1 = False
-    joueur2 = True
+    joueur1 = True
+    joueur2 = False
 
     # Boundaries of X axis
     max_x = 0.5
@@ -116,26 +115,21 @@ if __name__ == "__main__":
     max_z = 1.5
     min_z = 0.2
 
-    duration = 1
-
-    # Initial position and destination of the ball
-    destination_j1 = (round(random.uniform(min_x, max_x), 2),
-                      round(random.uniform(min_y, max_y), 2),
-                      0.00)
-
-    destination_j2 = (round(random.uniform(min_x, max_x), 2),
-                      round(random.uniform(min_y, max_y), 2),
-                      0.00)
+    # Number of intermediate positions for the trajectory the greater the number the smoother the trajectory and
+    # the slower the ball is.
+    nb_trajectories = 80
 
     # Initial position of the ball
-    ball_pos = (0.0, 0.0, 0.4)
+    ball_pos = (0.0, 0.0, 0.5)
 
     start_pos = ball_pos
-    end_pos = (0.4, 0.4, 0.4)
+    end_pos = (round(random.uniform(min_x, max_x), 2),
+               round(random.uniform(min_y, -0.2), 2),
+               round(random.uniform(min_z, 1), 2))
 
-    test = True
+    need_of_new_trajectory = True
 
-    pos = None
+    trajectory_positions = None
 
     # Get the camera calibration data
     with np.load('calibration/calibration.npz') as X:
@@ -205,24 +199,18 @@ if __name__ == "__main__":
 
                 frame = cv.addWeighted(overlay, alpha, frame, 1 - alpha, 0)
 
-                # Définit les points de départ et d'arrivée, ainsi que la hauteur de la trajectoire
-                height = max_z
-
-                # Définit le framerate de la caméra et la durée totale de la trajectoire
-                fps = 30
-                duration = 5  # Durée totale de la trajectoire en secondes
-
-                if test:
-                    pos = parabolic_trajectory(start_pos, end_pos, ball_speed_m_s, max_z, min_z)
-                    test = False
-                    print(pos)
+                # trajectory and movement of the ball
+                if need_of_new_trajectory:
+                    trajectory_positions = parabolic_trajectory(start_pos, end_pos, max_z, min_z, nb_trajectories)
+                    need_of_new_trajectory = False
+                    print(trajectory_positions)
                     print(ball_pos)
                     print(end_pos)
-                ball_pos = pos[0]
-                if len(pos) > 1:
-                    pos.pop(0)
+                ball_pos = trajectory_positions[0]
+                if len(trajectory_positions) > 1:
+                    trajectory_positions.pop(0)
                 else:
-                    test = True
+                    need_of_new_trajectory = True
                     start_pos = end_pos
                     if joueur1:
                         end_pos = (round(random.uniform(min_x, max_x), 2),
