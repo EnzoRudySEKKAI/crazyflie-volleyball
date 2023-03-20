@@ -35,18 +35,28 @@ class GameController:
     # Circle transparency
     ALPHA = 0.5
     
+    FIRST_PLAYER = {
+        "origin_x": 1.0,
+        "uri": 'radio://0/100/2M/E7E7E7E701',
+        "x_offset": 0.06,
+        "y_offset": 0.0,
+        "z_offset": 0.0
+    }
+    
+    SECOND_PLAYER = {
+        "origin_x": 1.0,
+        "uri": 'radio://0/100/2M/E7E7E7E702',
+        "x_offset": 0.06,
+        "y_offset": 0.03,
+        "z_offset": -0.5
+    }
+    
     def __init__(self):
         self.first_player = DroneController(
-            origin_x=1.0,
-            uri='radio://0/100/2M/E7E7E7E701',
-            x_offset=0.06
+            **self.FIRST_PLAYER
         )
         self.second_player = DroneController(
-            origin_x=-1.0,
-            uri='radio://0/100/2M/E7E7E7E702',
-            x_offset=0.06,
-            y_offset=0.03,
-            z_offset=-0.05
+            **self.SECOND_PLAYER
         )
         self.next_is_first_player = True
 
