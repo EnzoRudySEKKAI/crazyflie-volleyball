@@ -15,7 +15,7 @@ def calibrate():
     objp[:, :2] = np.mgrid[0:9, 0:6].T.reshape(-1, 2)
     
     images = glob.glob('*.jpg')
-
+    
     for fname in images:
         img = cv.imread(fname)
         gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
