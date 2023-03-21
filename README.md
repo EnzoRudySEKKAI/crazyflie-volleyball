@@ -25,3 +25,7 @@ FIRST_PLAYER = {
     "y_offset": 0.0,
     "z_offset": 0.0
 }
+
+Same for SECOND_PLAYER.
+
+These variables will be used to initialize your drones.
