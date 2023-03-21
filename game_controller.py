@@ -21,7 +21,7 @@ class GameController:
     
     # Number of intermediate positions for the trajectory the greater the number the smoother the trajectory and
     # the slower the ball is.
-    NB_TRAJECTORIES = 100
+    NB_TRAJECTORIES = 60
     
     ARUCO_SIZE = 0.265
     
@@ -44,7 +44,7 @@ class GameController:
     }
     
     SECOND_PLAYER = {
-        "origin_x": 1.0,
+        "origin_x": -1.0,
         "uri": 'radio://0/100/2M/E7E7E7E702',
         "x_offset": 0.06,
         "y_offset": 0.03,
@@ -150,7 +150,7 @@ class GameController:
         parameters = cv.aruco.DetectorParameters()
         detector = cv.aruco.ArucoDetector(dictionary, parameters)
         
-        start_pos = self.BALL_POS
+        start_pos = ball_pos = self.BALL_POS
         
         end_pos = (
             round(random.uniform(0.2, self.first_player.origin_x), 2),
@@ -203,8 +203,8 @@ class GameController:
                         # E.g. rotate 180 deg (PI) along Y and then translate -10 cm along X
 
                         # relative_transform_matrix_ = relative_transform_matrix([0, np.pi, 0], [axis_x, axis_y, axis_z])
-                        relative_transform_matrix_ = self.relative_transform_matrix([0, 0, 0],
-                                                                            [ball_pos[0], ball_pos[1], ball_pos[2]])
+                        relative_transform_matrix_ = self.relative_transform_matrix(
+                            [0, 0, 0], [ball_pos[0], ball_pos[1], ball_pos[2]])
 
                         # Now apply the transform to the original matrix by simply dot multiplying them
                         transform_matrix = np.dot(transform_matrix, relative_transform_matrix_)
@@ -257,12 +257,12 @@ class GameController:
                                 self.next_is_first_player = False
                             else:
                                 end_pos = (
-                                    round(random.uniform(-0.3, self.second_player.origin_x), 2),
+                                    round(random.uniform(-0.4, self.second_player.origin_x), 2),
                                     round(random.uniform(self.MIN_Y, self.MAX_Y), 2),
                                     round(random.uniform(self.MIN_Z, self.MAX_Z), 2)
                                 )
                                 self.next_is_first_player = True
-                                
+                        
                         position_to_visit = Position(end_pos[0], end_pos[1], end_pos[2])
                         
                         # First player starts first
@@ -276,7 +276,7 @@ class GameController:
             cap.release()
             cv.destroyAllWindows()
             
-        except:
+        except Exception as err:
             self.stop_drones()
 
 if __name__ == '__main__':
