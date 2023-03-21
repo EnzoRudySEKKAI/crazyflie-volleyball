@@ -11,7 +11,7 @@ python -m pip install -r requirements.txt
 
 ## Usage
 
-1. Calibrate your camera by running the script calibration.py, we have provided pictures for the following cameras: Logitech C270 and C920. If you have a different camera, you should use it to take pictures from different angles and modify the variable ```CAMERA_MODEL = 'C920'``` the calibration.py.
+1. Calibrate your camera by running the script calibration.py, we have provided pictures for the following cameras: Logitech C270 and C920. If you have a different camera, you should use it to take pictures from different angles and modify the variable ```CAMERA_MODEL = 'C920'``` in calibration.py.
 2. You can start the volleyball game by running the script game_controller.py.
 
 ### Nota Bene
