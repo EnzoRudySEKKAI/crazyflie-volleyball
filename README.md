@@ -1,6 +1,6 @@
 # Volleyball POC (Crazyflie 2.1)
 
-Python 2.0 was used in this project, we recommed doing the same.
+Python 3.9 was used in this project, we recommed doing the same.
 
 ## Requirements
 You should start by installing all the libraries.
