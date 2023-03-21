@@ -16,7 +16,7 @@ python -m pip install -r requirements.txt
 
 ### Nota Bene
 You should modify the following variables in the script ```game_controller.py``` 
-
+```
 FIRST_PLAYER = {
     "origin_x": DRONE ORIGIN,
     "uri": YOUR RADIO URI,
