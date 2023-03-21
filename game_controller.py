@@ -18,6 +18,15 @@ class GameController:
     BALL_COLOR = (0, 255, 255)
     BALL_SIZE = 1.2
     BALL_POS = (0.0, 0.0, 0.5)
+
+    # Aruco variables
+    LIST_RVEC = []
+    LIST_TVEC = []
+    CPT = 0
+    NEED_CALIBRATION = True
+    RVEC = None
+    TVEC = None
+
     
     # Number of intermediate positions for the trajectory the greater the number the smoother the trajectory and
     # the slower the ball is.
@@ -48,7 +57,8 @@ class GameController:
         "uri": 'radio://0/100/2M/E7E7E7E702',
         "x_offset": 0.06,
         "y_offset": 0.03,
-        "z_offset": -0.5
+        "z_offset": 0.0,
+        "cache": "./cache1"
     }
     
     def __init__(self):
@@ -168,6 +178,7 @@ class GameController:
 
         # Start the video capture
         cap = cv.VideoCapture(0)
+        cap.set(cv.CAP_PROP_AUTOFOCUS, 0)
         
         self.start_drones()
 
@@ -188,21 +199,29 @@ class GameController:
                     corners, ids, __ = detector.detectMarkers(gray)
 
                     if np.all(ids is not None):
-                        
-                        # Estimate the pose of the markers
-                        rvec, tvec, _ = cv.aruco.estimatePoseSingleMarkers(corners, self.ARUCO_SIZE, mtx, dist)
 
-                        # Get the first marker found
-                        rvec = rvec[0][0]
-                        tvec = tvec[0][0]
+                        if self.NEED_CALIBRATION:
+                            if self.CPT < 5:
+                                # Estimate the pose of the markers
+                                rvec, tvec, _ = cv.aruco.estimatePoseSingleMarkers(corners, self.ARUCO_SIZE, mtx, dist)
+                                # Get the first marker found
+                                self.RVEC = rvec[0][0]
+                                self.TVEC = tvec[0][0]
+                                self.LIST_RVEC.append(self.RVEC)
+                                self.LIST_TVEC.append(self.TVEC)
+                                self.CPT += 1
+                            else:
+                                self.RVEC = np.mean(self.LIST_RVEC, axis=0)
+                                self.TVEC = np.mean(self.LIST_TVEC, axis=0)
+                                self.NEED_CALIBRATION = False
+
 
                         # Get the original marker position in 4x4 matrix representation
-                        transform_matrix = self.get_transform_matrix(rvec, tvec)
+                        transform_matrix = self.get_transform_matrix(self.RVEC, self.TVEC)
 
                         # Get the transform matrix we want to apply to the obtained marker position
                         # E.g. rotate 180 deg (PI) along Y and then translate -10 cm along X
 
-                        # relative_transform_matrix_ = relative_transform_matrix([0, np.pi, 0], [axis_x, axis_y, axis_z])
                         relative_transform_matrix_ = self.relative_transform_matrix(
                             [0, 0, 0], [ball_pos[0], ball_pos[1], ball_pos[2]])
 
@@ -277,6 +296,7 @@ class GameController:
             cv.destroyAllWindows()
             
         except Exception as err:
+            print(str(err))
             self.stop_drones()
 
 if __name__ == '__main__':
