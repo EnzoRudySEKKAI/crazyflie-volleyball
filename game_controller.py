@@ -14,7 +14,7 @@ class GameController:
 
     # Ball variables
     BALL_COLOR = (0, 255, 255)
-    BALL_SIZE = 0.9
+    BALL_SIZE = 0.75
     BALL_POS = (0.0, 0.0, 0.5)
 
     # Aruco variables
@@ -384,14 +384,14 @@ class GameController:
                             start_pos = end_pos
                             if self.next_is_first_player:
                                 end_pos = (
-                                    round(random.uniform(0.2, self.MAX_X), 2),
+                                    round(random.uniform(0.3, self.MAX_X), 2),
                                     round(random.uniform(self.MIN_Y, self.MAX_Y), 2),
                                     round(random.uniform(self.MIN_Z, 1), 2)
                                 )
                                 self.next_is_first_player = False
                             else:
                                 end_pos = (
-                                    round(random.uniform(-0.2, self.MIN_X), 2),
+                                    round(random.uniform(-0.3, self.MIN_X), 2),
                                     round(random.uniform(self.MIN_Y, self.MAX_Y), 2),
                                     round(random.uniform(self.MIN_Z, self.MAX_Z), 2)
                                 )
