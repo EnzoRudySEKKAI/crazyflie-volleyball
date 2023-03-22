@@ -9,11 +9,9 @@ from drone_controller import DroneController
 from position import Position
 
 
-
 class GameController:
-    
     CALIBRATION_FILE = 'calibration/calibration.npz'
-    
+
     # Ball variables
     BALL_COLOR = (0, 255, 255)
     BALL_SIZE = 1.2
@@ -27,23 +25,25 @@ class GameController:
     RVEC = None
     TVEC = None
 
-    
     # Number of intermediate positions for the trajectory the greater the number the smoother the trajectory and
     # the slower the ball is.
     NB_TRAJECTORIES = 60
-    
+
     ARUCO_SIZE = 0.265
-    
+
     # Boundaries of axis Y and Z
-    MIN_Y = -0.1
-    MAX_Y = 0.1
-    
+    MIN_Y = -0.5
+    MAX_Y = 0.5
+
     MIN_Z = 0.4
     MAX_Z = 1
-    
+
+    MAX_X = 1
+    MIN_X = -1
+
     # Circle transparency
     ALPHA = 0.5
-    
+
     FIRST_PLAYER = {
         "origin_x": 1.0,
         "uri": 'radio://0/100/2M/E7E7E7E701',
@@ -51,7 +51,7 @@ class GameController:
         "y_offset": 0.0,
         "z_offset": 0.0
     }
-    
+
     SECOND_PLAYER = {
         "origin_x": -1.0,
         "uri": 'radio://0/100/2M/E7E7E7E702',
@@ -60,7 +60,7 @@ class GameController:
         "z_offset": 0.0,
         "cache": "./cache1"
     }
-    
+
     def __init__(self):
         self.first_player = DroneController(
             **self.FIRST_PLAYER
@@ -75,6 +75,21 @@ class GameController:
         tr = np.identity(n=4)
         tr[0:3, 3] = tvec
         return tr
+
+    @staticmethod
+    def perspective_projection(rvec, tvec, camera_matrix):
+        p = np.array([0, 0, 0]).reshape(3, 1)
+
+        # 3D point in the camera coordinate system
+        p_camera = np.dot(rvec, p) + tvec
+
+        # 2D point in the image plane
+        p_image = np.dot(camera_matrix, p_camera)
+
+        # Normalized 2D point
+        p_image_normalized = p_image / p_image[2]
+
+        return p_image_normalized, p_camera
 
     @staticmethod
     def parabolic_trajectory(start, end, max_height, min_height, frames):
@@ -127,9 +142,9 @@ class GameController:
         d_y = translation[1]
         d_z = translation[2]
         translate_matrix = np.array([[1, 0, 0, d_x],
-                                    [0, 1, 0, d_y],
-                                    [0, 0, 1, d_z],
-                                    [0, 0, 0, 1]], dtype=np.float32)
+                                     [0, 1, 0, d_y],
+                                     [0, 0, 1, d_z],
+                                     [0, 0, 0, 1]], dtype=np.float32)
         rotate_x_matrix = np.array([[1, 0, 0, 0],
                                     [0, x_c, -x_s, 0],
                                     [0, x_s, x_c, 0],
@@ -144,24 +159,129 @@ class GameController:
                                     [0, 0, 0, 1]])
         return np.dot(rotate_z_matrix, np.dot(rotate_y_matrix, np.dot(rotate_x_matrix, translate_matrix)))
 
+    @staticmethod
+    def draw_boundaries(self, transform_matrix, mtx, overlay):
+        rmat_relative_lim_0, tmat_relative_lim_0 = self.transform_matrix(self, self.MAX_X, self.MAX_Y,
+                                                                         0, transform_matrix)
+        rmat_relative_lim_1, tmat_relative_lim_1 = self.transform_matrix(self, self.MIN_X, self.MAX_Y,
+                                                                         0, transform_matrix)
+        rmat_relative_lim_2, tmat_relative_lim_2 = self.transform_matrix(self, self.MIN_X, self.MIN_Y,
+                                                                         0, transform_matrix)
+        rmat_relative_lim_3, tmat_relative_lim_3 = self.transform_matrix(self, self.MAX_X, self.MIN_Y,
+                                                                         0, transform_matrix)
+
+        p_image_normalized_lim_0, p_camera_lim_0 = self.perspective_projection(rmat_relative_lim_0,
+                                                                               tmat_relative_lim_0, mtx)
+        p_image_normalized_lim_1, p_camera_lim_1 = self.perspective_projection(rmat_relative_lim_1,
+                                                                               tmat_relative_lim_1, mtx)
+        p_image_normalized_lim_2, p_camera_lim_2 = self.perspective_projection(rmat_relative_lim_2,
+                                                                               tmat_relative_lim_2, mtx)
+        p_image_normalized_lim_3, p_camera_lim_3 = self.perspective_projection(rmat_relative_lim_3,
+                                                                               tmat_relative_lim_3, mtx)
+
+        cv.line(overlay, (int(p_image_normalized_lim_0[0]), int(p_image_normalized_lim_0[1])),
+                (int(p_image_normalized_lim_1[0]), int(p_image_normalized_lim_1[1])), (0, 0, 255), 2)
+        cv.line(overlay, (int(p_image_normalized_lim_1[0]), int(p_image_normalized_lim_1[1])),
+                (int(p_image_normalized_lim_2[0]), int(p_image_normalized_lim_2[1])), (0, 0, 255), 2)
+        cv.line(overlay, (int(p_image_normalized_lim_2[0]), int(p_image_normalized_lim_2[1])),
+                (int(p_image_normalized_lim_3[0]), int(p_image_normalized_lim_3[1])), (0, 0, 255), 2)
+        cv.line(overlay, (int(p_image_normalized_lim_3[0]), int(p_image_normalized_lim_3[1])),
+                (int(p_image_normalized_lim_0[0]), int(p_image_normalized_lim_0[1])), (0, 0, 255), 2)
+
+    @staticmethod
+    def draw_pot(self, transform_matrix, mtx, overlay):
+        rmat_relative_poto_1_bas, tmat_relative_poto_1_bas = self.transform_matrix(self, 0, self.MAX_Y,
+                                                                                   0, transform_matrix)
+        rmat_relative_poto_1_haut, tmat_relative_poto_1_haut = self.transform_matrix(self, 0, self.MAX_Y,
+                                                                                     self.MAX_Z,
+                                                                                     transform_matrix)
+        rmat_relative_poto_2_bas, tmat_relative_poto_2_bas = self.transform_matrix(self, 0, self.MIN_Y,
+                                                                                   0, transform_matrix)
+        rmat_relative_poto_2_haut, tmat_relative_poto_2_haut = self.transform_matrix(self, 0, self.MIN_Y,
+                                                                                     self.MAX_Z,
+                                                                                     transform_matrix)
+
+        p_image_normalized_lim_0, p_camera_lim_0 = self.perspective_projection(rmat_relative_poto_1_bas,
+                                                                               tmat_relative_poto_1_bas,
+                                                                               mtx)
+        p_image_normalized_lim_1, p_camera_lim_1 = self.perspective_projection(rmat_relative_poto_1_haut,
+                                                                               tmat_relative_poto_1_haut,
+                                                                               mtx)
+        p_image_normalized_lim_2, p_camera_lim_2 = self.perspective_projection(rmat_relative_poto_2_bas,
+                                                                               tmat_relative_poto_2_bas,
+                                                                               mtx)
+        p_image_normalized_lim_3, p_camera_lim_3 = self.perspective_projection(rmat_relative_poto_2_haut,
+                                                                               tmat_relative_poto_2_haut,
+                                                                               mtx)
+        cv.line(overlay, (int(p_image_normalized_lim_0[0]), int(p_image_normalized_lim_0[1])),
+                (int(p_image_normalized_lim_1[0]), int(p_image_normalized_lim_1[1])), (0, 255, 0), 2)
+        cv.line(overlay, (int(p_image_normalized_lim_2[0]), int(p_image_normalized_lim_2[1])),
+                (int(p_image_normalized_lim_3[0]), int(p_image_normalized_lim_3[1])), (0, 255, 0), 2)
+
+    def draw_net(self, transform_matrix, mtx, overlay):
+        rmat_relative_net_top_right, tmat_relative_net_top_right = self.transform_matrix(self, 0, self.MAX_Y,
+                                                                                         self.MAX_Z,
+                                                                                         transform_matrix)
+        rmat_relative_net_top_left, tmat_relative_net_top_left = self.transform_matrix(self, 0, self.MIN_Y,
+                                                                                       self.MAX_Z,
+                                                                                       transform_matrix)
+        rmat_relative_net_bottom_right, tmat_relative_net_bottom_right = self.transform_matrix(self, 0, self.MAX_Y,
+                                                                                               self.MAX_Z - 0.4,
+                                                                                               transform_matrix)
+        rmat_relative_net_bottom_left, tmat_relative_net_bottom_left = self.transform_matrix(self, 0, self.MIN_Y,
+                                                                                             self.MAX_Z - 0.4,
+                                                                                             transform_matrix)
+
+        p_image_normalized_lim_0, p_camera_lim_0 = self.perspective_projection(rmat_relative_net_top_right,
+                                                                               tmat_relative_net_top_right,
+                                                                               mtx)
+        p_image_normalized_lim_1, p_camera_lim_1 = self.perspective_projection(rmat_relative_net_top_left,
+                                                                               tmat_relative_net_top_left,
+                                                                               mtx)
+        p_image_normalized_lim_2, p_camera_lim_2 = self.perspective_projection(rmat_relative_net_bottom_right,
+                                                                               tmat_relative_net_bottom_right,
+                                                                               mtx)
+        p_image_normalized_lim_3, p_camera_lim_3 = self.perspective_projection(rmat_relative_net_bottom_left,
+                                                                               tmat_relative_net_bottom_left,
+                                                                               mtx)
+        cv.line(overlay, (int(p_image_normalized_lim_0[0]), int(p_image_normalized_lim_0[1])),
+                (int(p_image_normalized_lim_1[0]), int(p_image_normalized_lim_1[1])), (0, 255, 255), 2)
+
+        cv.line(overlay, (int(p_image_normalized_lim_2[0]), int(p_image_normalized_lim_2[1])),
+                (int(p_image_normalized_lim_3[0]), int(p_image_normalized_lim_3[1])), (0, 255, 255), 2)
+
+    @staticmethod
+    def transform_matrix(self, posx, posy, posz, transform_matrix):
+        relative_transform_matrix_ballon = self.relative_transform_matrix(
+            [0, 0, 0], [posx, posy, posz])
+
+        # Now apply the transform to the original matrix by simply dot multiplying them
+        transform_matrix = np.dot(transform_matrix, relative_transform_matrix_ballon)
+
+        # Extract rotation matrix and translation vector out of result and then display
+        rmat_relative = transform_matrix[:3, :3]
+        tmat_relative = transform_matrix[:3, 3:]
+
+        return rmat_relative, tmat_relative
+
     def start_drones(self):
         Thread(target=self.first_player.main).start()
         Thread(target=self.second_player.main).start()
-        
+
     def stop_drones(self):
         # TODO: To fix
         self.first_player.land_now = True
         self.second_player.land_now = True
 
     def main(self):
-        
+
         # Aruco detection
         dictionary = cv.aruco.getPredefinedDictionary(cv.aruco.DICT_4X4_250)
         parameters = cv.aruco.DetectorParameters()
         detector = cv.aruco.ArucoDetector(dictionary, parameters)
-        
+
         start_pos = ball_pos = self.BALL_POS
-        
+
         end_pos = (
             round(random.uniform(0.2, self.first_player.origin_x), 2),
             round(random.uniform(self.MIN_Y, self.MAX_Y), 2),
@@ -179,14 +299,14 @@ class GameController:
         # Start the video capture
         cap = cv.VideoCapture(0)
         cap.set(cv.CAP_PROP_AUTOFOCUS, 0)
-        
+
         self.start_drones()
 
         try:
             while True:
-                                
+
                 _, frame = cap.read()
-                
+
                 if cv.waitKey(1) & 0xFF == ord('q'):
                     self.stop_drones()
                     break
@@ -215,51 +335,42 @@ class GameController:
                                 self.TVEC = np.mean(self.LIST_TVEC, axis=0)
                                 self.NEED_CALIBRATION = False
 
-
                         # Get the original marker position in 4x4 matrix representation
                         transform_matrix = self.get_transform_matrix(self.RVEC, self.TVEC)
 
                         # Get the transform matrix we want to apply to the obtained marker position
-                        # E.g. rotate 180 deg (PI) along Y and then translate -10 cm along X
-
-                        relative_transform_matrix_ = self.relative_transform_matrix(
-                            [0, 0, 0], [ball_pos[0], ball_pos[1], ball_pos[2]])
-
-                        # Now apply the transform to the original matrix by simply dot multiplying them
-                        transform_matrix = np.dot(transform_matrix, relative_transform_matrix_)
-
-                        # Extract rotation matrix and translation vector out of result and then display
-                        rmat_relative = transform_matrix[:3, :3]
-                        tmat_relative = transform_matrix[:3, 3:]
-                        
+                        rmat_relative_ballon, tmat_relative_ballon = self.transform_matrix(self, ball_pos[0],
+                                                                                           ball_pos[1], ball_pos[2],
+                                                                                           transform_matrix)
                         # Perspective projection equations with depth
-                        # 3D point in the marker coordinate system
-                        p = np.array([0, 0, 0]).reshape(3, 1)
-                        
-                        # 3D point in the camera coordinate system
-                        p_camera = np.dot(rmat_relative, p) + tmat_relative
-                        
-                        # 2D point in the image plane
-                        p_image = np.dot(mtx, p_camera)
-                        
-                        # Normalized 2D point
-                        p_image_normalized = p_image / p_image[2]
+                        p_image_normalized_ballon, p_camera_ballon = self.perspective_projection(rmat_relative_ballon,
+                                                                                                 tmat_relative_ballon,
+                                                                                                 mtx)
 
                         # Scale the ball size depending on the distance
-                        ball_scale = int(self.BALL_SIZE / p_camera[2] * 200)
+                        ball_scale = int(self.BALL_SIZE / p_camera_ballon[2] * 200)
 
                         overlay = frame.copy()
 
                         # Draw the ball
-                        cv.circle(overlay, (int(p_image_normalized[0]), int(p_image_normalized[1])), ball_scale, self.BALL_COLOR, -1)
+                        cv.circle(overlay, (int(p_image_normalized_ballon[0]), int(p_image_normalized_ballon[1])),
+                                  ball_scale, self.BALL_COLOR, -1)
 
-                        cv.drawFrameAxes(frame, mtx, dist, rmat_relative, tmat_relative, 0.1)
+                        # Draw the limits
+                        self.draw_boundaries(self, transform_matrix, mtx, overlay)
+
+                        # Draw the pot
+                        self.draw_pot(self, transform_matrix, mtx, overlay)
+
+                        # Draw the axes
+                        cv.drawFrameAxes(frame, mtx, dist, rmat_relative_ballon, tmat_relative_ballon, 0.1)
 
                         frame = cv.addWeighted(overlay, self.ALPHA, frame, 1 - self.ALPHA, 0)
 
                         # Trajectory and movement of the ball
                         if need_of_new_trajectory:
-                            trajectory_positions = self.parabolic_trajectory(start_pos, end_pos, self.MAX_Z+0.5, self.MIN_Z, self.NB_TRAJECTORIES)
+                            trajectory_positions = self.parabolic_trajectory(start_pos, end_pos, self.MAX_Z + 0.5,
+                                                                             self.MIN_Z, self.NB_TRAJECTORIES)
                             need_of_new_trajectory = False
                         ball_pos = trajectory_positions[0]
                         if len(trajectory_positions) > 1:
@@ -281,12 +392,12 @@ class GameController:
                                     round(random.uniform(self.MIN_Z, self.MAX_Z), 2)
                                 )
                                 self.next_is_first_player = True
-                        
+
                         position_to_visit = Position(end_pos[0], end_pos[1], end_pos[2])
-                        
+
                         # First player starts first
                         if not self.next_is_first_player:
-                            self.first_player.position_to_visit = position_to_visit 
+                            self.first_player.position_to_visit = position_to_visit
                         else:
                             if position_to_visit.x < 0.0:
                                 self.second_player.position_to_visit = position_to_visit
@@ -294,10 +405,11 @@ class GameController:
                     cv.imshow('frame', frame)
             cap.release()
             cv.destroyAllWindows()
-            
+
         except Exception as err:
             print(str(err))
             self.stop_drones()
+
 
 if __name__ == '__main__':
     GameController().main()
