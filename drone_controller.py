@@ -21,19 +21,24 @@ class DroneController:
     SLEEP_AFTER_TAKOFF = 5
     
     def __init__(self, uri='radio://0/100/2M/E7E7E7E701', cache='./cache',
-                 origin_x=0.0, origin_y=0.0, x_offset=0.0, y_offset=0.0, z_offset=0.0):
+                 origin_x=0.0, origin_y=0.0, min_x=0.0, min_y=-0.5, max_x=0.0,
+                 max_y=0.0, x_offset=0.0, y_offset=0.0, z_offset=0.0):
         self.drone_number = uri[-1::]
         self.uri = uri
         self.cache = cache
         self.origin_x = origin_x
         self.origin_y = origin_y
+        self.min_x = min_x
+        self.max_x = max_x
+        self.min_y = min_y
+        self.max_y = max_y
+        self.x_offset = x_offset
+        self.y_offset = y_offset
+        self.z_offset = z_offset
         self._position_to_visit = None
         self._last_position_visited = None
         self._land_now = False
         self._drone_started = False
-        self.x_offset = x_offset
-        self.y_offset = y_offset
-        self.z_offset = z_offset
         self.low_battery = False
     
     @property
@@ -95,14 +100,6 @@ class DroneController:
         controller.go_to(self.origin_x, self.origin_y, 0.5)
         time.sleep(self.SLEEP_AFTER_VISIT)
         
-    def log_stab_callback(self, timestamp, data, logconf):
-        self.low_battery = data.get('batteryLevel') <= 25
-
-    def simple_log_async(self, scf, logconf):
-        cf = scf.cf
-        cf.log.add_config(logconf)
-        logconf.data_received_cb.add_callback(self.log_stab_callback)
-        
     def start(self, scf):
         
         pc = PositionHlCommander(scf, controller=PositionHlCommander.CONTROLLER_PID,
@@ -134,17 +131,6 @@ class DroneController:
     def main(self):
         cflib.crtp.init_drivers()
         
-        lg_stab = LogConfig(name='Stabilizer', period_in_ms=10)
-        lg_stab.add_variable('pm.batteryLife', 'uint8_t')
-        
         # syncCrazyflie will create a synchronous Crazyflie instance with the specified link_uri.
-        with SyncCrazyflie(self.uri, cf=Crazyflie(rw_cache=self.cache)) as scf:
-            
-            self.simple_log_async(scf, lg_stab)
-            # Start logs
-            lg_stab.start()
-            
+        with SyncCrazyflie(self.uri, cf=Crazyflie(rw_cache=self.cache)) as scf:     
             self.start(scf)
-            
-            # End logs
-            lg_stab.stop()

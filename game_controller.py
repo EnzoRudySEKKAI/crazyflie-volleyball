@@ -31,7 +31,7 @@ class GameController:
 
     ARUCO_SIZE = 0.265
 
-    # Boundaries of axis Y and Z
+    # Boundaries of axis Z
     MIN_Y = -0.5
     MAX_Y = 0.5
 
@@ -43,32 +43,10 @@ class GameController:
 
     # Circle transparency
     ALPHA = 0.5
-
-    FIRST_PLAYER = {
-        "origin_x": 1.0,
-        "uri": 'radio://0/100/2M/E7E7E7E701',
-        "x_offset": 0.03,
-        "y_offset": 0.05,
-        "z_offset": -0.15
-    }
-
-    SECOND_PLAYER = {
-        "origin_x": -1.0,
-        "uri": 'radio://0/100/2M/E7E7E7E702',
-        "x_offset": 0.06,
-        "y_offset": 0.05,
-        "z_offset": -0.15,
-        "cache": "./cache1"
-    }
-
-    def __init__(self):
-        self.first_player = DroneController(
-            **self.FIRST_PLAYER
-        )
-        self.second_player = DroneController(
-            **self.SECOND_PLAYER
-        )
-        self.next_is_first_player = True
+    
+    def __init__(self, players):
+        self.players = [DroneController(**player) for player in players]
+        self.players_status = [False for _ in players]
 
     @staticmethod
     def get_translation_matrix(tvec):
@@ -266,13 +244,22 @@ class GameController:
         return rmat_relative, tmat_relative
 
     def start_drones(self):
-        Thread(target=self.first_player.main).start()
-        Thread(target=self.second_player.main).start()
+        for player in self.players:
+            Thread(target=player.main).start()
 
     def stop_drones(self):
-        # TODO: To fix
-        self.first_player.land_now = True
-        self.second_player.land_now = True
+        for player in self.players:
+            player.land_now = True
+            
+    def get_next_player(self):
+        
+        if not any(not status for status in self.players_status):
+            self.players_status = [False for _ in self.players]
+            
+        for index in range(len(self.players_status)):
+            if not self.players_status[index]:
+                self.players_status[index] = True
+                return self.players[index]
 
     def main(self):
 
@@ -281,18 +268,17 @@ class GameController:
         parameters = cv.aruco.DetectorParameters()
         detector = cv.aruco.ArucoDetector(dictionary, parameters)
 
-        start_pos = ball_pos = self.BALL_POS
-
-        end_pos = (
-            round(random.uniform(0.2, self.first_player.origin_x), 2),
-            round(random.uniform(self.MIN_Y, self.MAX_Y), 2),
-            round(random.uniform(self.MIN_Z, self.MAX_Z), 2)
-        )
-
-        need_of_new_trajectory = True
-
-        trajectory_positions = None
-
+        start_pos = ball_pos = end_pos = self.BALL_POS
+        
+        # end_pos = (
+        #     round(random.uniform(0.2, 1), 2),
+        #     round(random.uniform(self.MIN_Y, self.MAX_Y), 2),
+        #     round(random.uniform(self.MIN_Z, self.MAX_Z), 2)
+        # )
+        
+        need_of_new_trajectory = False
+        trajectory_positions = []
+        
         # Get the camera calibration data
         with np.load(self.CALIBRATION_FILE) as X:
             mtx, dist, _, _ = [X[i] for i in ('mtx', 'dist', 'rvecs', 'tvecs')]
@@ -376,43 +362,35 @@ class GameController:
                             trajectory_positions = self.parabolic_trajectory(start_pos, end_pos, self.MAX_Z + 0.5,
                                                                              self.MIN_Z, self.NB_TRAJECTORIES)
                             need_of_new_trajectory = False
-                        ball_pos = trajectory_positions[0]
+                        
+                        if trajectory_positions:
+                            ball_pos = trajectory_positions[0]
+                            
                         if len(trajectory_positions) > 1:
                             trajectory_positions.pop(0)
+                            
                         else:
+                            
                             need_of_new_trajectory = True
                             start_pos = end_pos
-                            if self.next_is_first_player:
-                                end_pos = (
-                                    round(random.uniform(0.3, self.MAX_X), 2),
-                                    round(random.uniform(self.MIN_Y, self.MAX_Y), 2),
-                                    round(random.uniform(self.MIN_Z, 1), 2)
-                                )
-                                self.next_is_first_player = False
-                            else:
-                                end_pos = (
-                                    round(random.uniform(-0.3, self.MIN_X), 2),
-                                    round(random.uniform(self.MIN_Y, self.MAX_Y), 2),
-                                    round(random.uniform(self.MIN_Z, self.MAX_Z), 2)
-                                )
-                                self.next_is_first_player = True
+                            
+                            player = self.get_next_player()
 
-                        position_to_visit = Position(end_pos[0], end_pos[1], end_pos[2])
+                            end_pos = (
+                                round(random.uniform(player.min_x, player.max_x), 2),
+                                round(random.uniform(player.min_y, player.max_y), 2),
+                                round(random.uniform(self.MIN_Z, self.MAX_Z), 2)
+                            )
 
-                        # First player starts first
-                        if not self.next_is_first_player:
-                            self.first_player.position_to_visit = position_to_visit
-                        else:
-                            if position_to_visit.x < 0.0:
-                                self.second_player.position_to_visit = position_to_visit
+                            position_to_visit = Position(end_pos[0], end_pos[1], end_pos[2])
+
+                            # Send drone to the position
+                            player.position_to_visit = position_to_visit
 
                     cv.imshow('frame', frame)
             cap.release()
             cv.destroyAllWindows()
 
         except Exception as err:
+            print(str(err))
             self.stop_drones()
-
-
-if __name__ == '__main__':
-    GameController().main()
