@@ -218,6 +218,7 @@ class GameController:
         cv.line(overlay, (int(p_image_normalized_lim_2[0]), int(p_image_normalized_lim_2[1])),
                 (int(p_image_normalized_lim_3[0]), int(p_image_normalized_lim_3[1])), (0, 255, 0), 2)
 
+    @staticmethod
     def draw_net(self, transform_matrix, mtx, overlay):
         rmat_relative_net_top_right, tmat_relative_net_top_right = self.transform_matrix(self, 0, self.MAX_Y,
                                                                                          self.MAX_Z,
@@ -362,6 +363,9 @@ class GameController:
                         # Draw the pot
                         self.draw_pot(self, transform_matrix, mtx, overlay)
 
+                        # Draw the net
+                        self.draw_net(self, transform_matrix, mtx, overlay)
+
                         # Draw the axes
                         cv.drawFrameAxes(frame, mtx, dist, rmat_relative_ballon, tmat_relative_ballon, 0.1)
 
@@ -380,14 +384,14 @@ class GameController:
                             start_pos = end_pos
                             if self.next_is_first_player:
                                 end_pos = (
-                                    round(random.uniform(0.2, self.first_player.origin_x), 2),
-                                    round(random.uniform(0.2, self.MAX_Y), 2),
+                                    round(random.uniform(0.2, self.MAX_X), 2),
+                                    round(random.uniform(self.MIN_Y, self.MAX_Y), 2),
                                     round(random.uniform(self.MIN_Z, 1), 2)
                                 )
                                 self.next_is_first_player = False
                             else:
                                 end_pos = (
-                                    round(random.uniform(-0.4, self.second_player.origin_x), 2),
+                                    round(random.uniform(-0.2, self.MIN_X), 2),
                                     round(random.uniform(self.MIN_Y, self.MAX_Y), 2),
                                     round(random.uniform(self.MIN_Z, self.MAX_Z), 2)
                                 )
