@@ -14,7 +14,7 @@ class GameController:
 
     # Ball variables
     BALL_COLOR = (0, 255, 255)
-    BALL_SIZE = 1.2
+    BALL_SIZE = 0.75
     BALL_POS = (0.0, 0.0, 0.5)
 
     # Aruco variables
@@ -27,7 +27,7 @@ class GameController:
 
     # Number of intermediate positions for the trajectory the greater the number the smoother the trajectory and
     # the slower the ball is.
-    NB_TRAJECTORIES = 60
+    NB_TRAJECTORIES = 40
 
     ARUCO_SIZE = 0.265
 
@@ -47,17 +47,17 @@ class GameController:
     FIRST_PLAYER = {
         "origin_x": 1.0,
         "uri": 'radio://0/100/2M/E7E7E7E701',
-        "x_offset": 0.06,
-        "y_offset": 0.0,
-        "z_offset": 0.0
+        "x_offset": 0.03,
+        "y_offset": 0.05,
+        "z_offset": -0.15
     }
 
     SECOND_PLAYER = {
         "origin_x": -1.0,
         "uri": 'radio://0/100/2M/E7E7E7E702',
         "x_offset": 0.06,
-        "y_offset": 0.03,
-        "z_offset": 0.0,
+        "y_offset": 0.05,
+        "z_offset": -0.15,
         "cache": "./cache1"
     }
 
@@ -233,16 +233,16 @@ class GameController:
                                                                                              self.MAX_Z - 0.4,
                                                                                              transform_matrix)
 
-        p_image_normalized_lim_0, p_camera_lim_0 = self.perspective_projection(rmat_relative_net_top_right,
+        p_image_normalized_lim_0, _ = self.perspective_projection(rmat_relative_net_top_right,
                                                                                tmat_relative_net_top_right,
                                                                                mtx)
-        p_image_normalized_lim_1, p_camera_lim_1 = self.perspective_projection(rmat_relative_net_top_left,
+        p_image_normalized_lim_1, _ = self.perspective_projection(rmat_relative_net_top_left,
                                                                                tmat_relative_net_top_left,
                                                                                mtx)
-        p_image_normalized_lim_2, p_camera_lim_2 = self.perspective_projection(rmat_relative_net_bottom_right,
+        p_image_normalized_lim_2, _ = self.perspective_projection(rmat_relative_net_bottom_right,
                                                                                tmat_relative_net_bottom_right,
                                                                                mtx)
-        p_image_normalized_lim_3, p_camera_lim_3 = self.perspective_projection(rmat_relative_net_bottom_left,
+        p_image_normalized_lim_3, _ = self.perspective_projection(rmat_relative_net_bottom_left,
                                                                                tmat_relative_net_bottom_left,
                                                                                mtx)
         cv.line(overlay, (int(p_image_normalized_lim_0[0]), int(p_image_normalized_lim_0[1])),
@@ -384,14 +384,14 @@ class GameController:
                             start_pos = end_pos
                             if self.next_is_first_player:
                                 end_pos = (
-                                    round(random.uniform(0.2, self.MAX_X), 2),
+                                    round(random.uniform(0.3, self.MAX_X), 2),
                                     round(random.uniform(self.MIN_Y, self.MAX_Y), 2),
                                     round(random.uniform(self.MIN_Z, 1), 2)
                                 )
                                 self.next_is_first_player = False
                             else:
                                 end_pos = (
-                                    round(random.uniform(-0.2, self.MIN_X), 2),
+                                    round(random.uniform(-0.3, self.MIN_X), 2),
                                     round(random.uniform(self.MIN_Y, self.MAX_Y), 2),
                                     round(random.uniform(self.MIN_Z, self.MAX_Z), 2)
                                 )

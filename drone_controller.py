@@ -6,6 +6,7 @@ from position import Position
 import cflib.crtp
 from cflib.crazyflie import Crazyflie
 from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
+from cflib.crazyflie.log import LogConfig
 from cflib.positioning.position_hl_commander import PositionHlCommander
 
 
@@ -33,6 +34,7 @@ class DroneController:
         self.x_offset = x_offset
         self.y_offset = y_offset
         self.z_offset = z_offset
+        self.low_battery = False
     
     @property
     def position_to_visit(self):
@@ -93,6 +95,14 @@ class DroneController:
         controller.go_to(self.origin_x, self.origin_y, 0.5)
         time.sleep(self.SLEEP_AFTER_VISIT)
         
+    def log_stab_callback(self, timestamp, data, logconf):
+        self.low_battery = data.get('batteryLevel') <= 25
+
+    def simple_log_async(self, scf, logconf):
+        cf = scf.cf
+        cf.log.add_config(logconf)
+        logconf.data_received_cb.add_callback(self.log_stab_callback)
+        
     def start(self, scf):
         
         pc = PositionHlCommander(scf, controller=PositionHlCommander.CONTROLLER_PID,
@@ -106,6 +116,9 @@ class DroneController:
         self.last_position_visited = Position(0, 0, 0)
         
         while not self.land_now and threading.main_thread().is_alive():
+            if self.low_battery:
+                print(f"[{str(self.drone_number)}] Low battery!!")
+                
             print(f"[{str(self.drone_number)}] Waiting for position")
             if self.position_to_visit:
                 self.go_to_position(pc)
@@ -121,6 +134,17 @@ class DroneController:
     def main(self):
         cflib.crtp.init_drivers()
         
+        lg_stab = LogConfig(name='Stabilizer', period_in_ms=10)
+        lg_stab.add_variable('pm.batteryLife', 'uint8_t')
+        
         # syncCrazyflie will create a synchronous Crazyflie instance with the specified link_uri.
         with SyncCrazyflie(self.uri, cf=Crazyflie(rw_cache=self.cache)) as scf:
+            
+            self.simple_log_async(scf, lg_stab)
+            # Start logs
+            lg_stab.start()
+            
             self.start(scf)
+            
+            # End logs
+            lg_stab.stop()
