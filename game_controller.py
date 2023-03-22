@@ -221,16 +221,16 @@ class GameController:
     @staticmethod
     def draw_net(self, transform_matrix, mtx, overlay):
         rmat_relative_net_top_right, tmat_relative_net_top_right = self.transform_matrix(self, 0, self.MAX_Y,
-                                                                                         self.MAX_Z,
+                                                                                         self.MAX_Z-0.2,
                                                                                          transform_matrix)
         rmat_relative_net_top_left, tmat_relative_net_top_left = self.transform_matrix(self, 0, self.MIN_Y,
-                                                                                       self.MAX_Z,
+                                                                                       self.MAX_Z-0.2,
                                                                                        transform_matrix)
         rmat_relative_net_bottom_right, tmat_relative_net_bottom_right = self.transform_matrix(self, 0, self.MAX_Y,
-                                                                                               self.MAX_Z - 0.4,
+                                                                                               self.MAX_Z - 0.5,
                                                                                                transform_matrix)
         rmat_relative_net_bottom_left, tmat_relative_net_bottom_left = self.transform_matrix(self, 0, self.MIN_Y,
-                                                                                             self.MAX_Z - 0.4,
+                                                                                             self.MAX_Z - 0.5,
                                                                                              transform_matrix)
 
         p_image_normalized_lim_0, _ = self.perspective_projection(rmat_relative_net_top_right,
@@ -411,7 +411,6 @@ class GameController:
             cv.destroyAllWindows()
 
         except Exception as err:
-            print(str(err))
             self.stop_drones()
 
 
