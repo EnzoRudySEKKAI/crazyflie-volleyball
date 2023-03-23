@@ -13,7 +13,7 @@ class GameController:
     CALIBRATION_FILE = 'calibration/calibration.npz'
 
     # Ball variables
-    BALL_COLOR = (0, 255, 255)
+    BALL_COLOR = (255, 0, 0)
     BALL_SIZE = 0.75
     BALL_POS = (0.0, 0.0, 0.5)
 
@@ -43,7 +43,7 @@ class GameController:
 
     # Circle transparency
     ALPHA = 0.5
-    
+
     def __init__(self, players):
         self.players = [DroneController(**player) for player in players]
         self.players_status = [False for _ in players]
@@ -148,13 +148,13 @@ class GameController:
         rmat_relative_lim_3, tmat_relative_lim_3 = self.transform_matrix(self, self.MAX_X, self.MIN_Y,
                                                                          0, transform_matrix)
 
-        p_image_normalized_lim_0, p_camera_lim_0 = self.perspective_projection(rmat_relative_lim_0,
+        p_image_normalized_lim_0, _ = self.perspective_projection(rmat_relative_lim_0,
                                                                                tmat_relative_lim_0, mtx)
-        p_image_normalized_lim_1, p_camera_lim_1 = self.perspective_projection(rmat_relative_lim_1,
+        p_image_normalized_lim_1, _ = self.perspective_projection(rmat_relative_lim_1,
                                                                                tmat_relative_lim_1, mtx)
-        p_image_normalized_lim_2, p_camera_lim_2 = self.perspective_projection(rmat_relative_lim_2,
+        p_image_normalized_lim_2, _ = self.perspective_projection(rmat_relative_lim_2,
                                                                                tmat_relative_lim_2, mtx)
-        p_image_normalized_lim_3, p_camera_lim_3 = self.perspective_projection(rmat_relative_lim_3,
+        p_image_normalized_lim_3, _ = self.perspective_projection(rmat_relative_lim_3,
                                                                                tmat_relative_lim_3, mtx)
 
         cv.line(overlay, (int(p_image_normalized_lim_0[0]), int(p_image_normalized_lim_0[1])),
@@ -171,24 +171,24 @@ class GameController:
         rmat_relative_poto_1_bas, tmat_relative_poto_1_bas = self.transform_matrix(self, 0, self.MAX_Y,
                                                                                    0, transform_matrix)
         rmat_relative_poto_1_haut, tmat_relative_poto_1_haut = self.transform_matrix(self, 0, self.MAX_Y,
-                                                                                     self.MAX_Z,
+                                                                                     self.MAX_Z-0.2,
                                                                                      transform_matrix)
         rmat_relative_poto_2_bas, tmat_relative_poto_2_bas = self.transform_matrix(self, 0, self.MIN_Y,
                                                                                    0, transform_matrix)
         rmat_relative_poto_2_haut, tmat_relative_poto_2_haut = self.transform_matrix(self, 0, self.MIN_Y,
-                                                                                     self.MAX_Z,
+                                                                                     self.MAX_Z-0.2,
                                                                                      transform_matrix)
 
-        p_image_normalized_lim_0, p_camera_lim_0 = self.perspective_projection(rmat_relative_poto_1_bas,
+        p_image_normalized_lim_0, _ = self.perspective_projection(rmat_relative_poto_1_bas,
                                                                                tmat_relative_poto_1_bas,
                                                                                mtx)
-        p_image_normalized_lim_1, p_camera_lim_1 = self.perspective_projection(rmat_relative_poto_1_haut,
+        p_image_normalized_lim_1, _ = self.perspective_projection(rmat_relative_poto_1_haut,
                                                                                tmat_relative_poto_1_haut,
                                                                                mtx)
-        p_image_normalized_lim_2, p_camera_lim_2 = self.perspective_projection(rmat_relative_poto_2_bas,
+        p_image_normalized_lim_2, _ = self.perspective_projection(rmat_relative_poto_2_bas,
                                                                                tmat_relative_poto_2_bas,
                                                                                mtx)
-        p_image_normalized_lim_3, p_camera_lim_3 = self.perspective_projection(rmat_relative_poto_2_haut,
+        p_image_normalized_lim_3, _ = self.perspective_projection(rmat_relative_poto_2_haut,
                                                                                tmat_relative_poto_2_haut,
                                                                                mtx)
         cv.line(overlay, (int(p_image_normalized_lim_0[0]), int(p_image_normalized_lim_0[1])),
@@ -199,10 +199,10 @@ class GameController:
     @staticmethod
     def draw_net(self, transform_matrix, mtx, overlay):
         rmat_relative_net_top_right, tmat_relative_net_top_right = self.transform_matrix(self, 0, self.MAX_Y,
-                                                                                         self.MAX_Z-0.2,
+                                                                                         self.MAX_Z - 0.2,
                                                                                          transform_matrix)
         rmat_relative_net_top_left, tmat_relative_net_top_left = self.transform_matrix(self, 0, self.MIN_Y,
-                                                                                       self.MAX_Z-0.2,
+                                                                                       self.MAX_Z - 0.2,
                                                                                        transform_matrix)
         rmat_relative_net_bottom_right, tmat_relative_net_bottom_right = self.transform_matrix(self, 0, self.MAX_Y,
                                                                                                self.MAX_Z - 0.5,
@@ -212,22 +212,58 @@ class GameController:
                                                                                              transform_matrix)
 
         p_image_normalized_lim_0, _ = self.perspective_projection(rmat_relative_net_top_right,
-                                                                               tmat_relative_net_top_right,
-                                                                               mtx)
+                                                                  tmat_relative_net_top_right,
+                                                                  mtx)
         p_image_normalized_lim_1, _ = self.perspective_projection(rmat_relative_net_top_left,
-                                                                               tmat_relative_net_top_left,
-                                                                               mtx)
+                                                                  tmat_relative_net_top_left,
+                                                                  mtx)
         p_image_normalized_lim_2, _ = self.perspective_projection(rmat_relative_net_bottom_right,
-                                                                               tmat_relative_net_bottom_right,
-                                                                               mtx)
+                                                                  tmat_relative_net_bottom_right,
+                                                                  mtx)
         p_image_normalized_lim_3, _ = self.perspective_projection(rmat_relative_net_bottom_left,
-                                                                               tmat_relative_net_bottom_left,
-                                                                               mtx)
+                                                                  tmat_relative_net_bottom_left,
+                                                                  mtx)
         cv.line(overlay, (int(p_image_normalized_lim_0[0]), int(p_image_normalized_lim_0[1])),
                 (int(p_image_normalized_lim_1[0]), int(p_image_normalized_lim_1[1])), (0, 255, 255), 2)
 
         cv.line(overlay, (int(p_image_normalized_lim_2[0]), int(p_image_normalized_lim_2[1])),
                 (int(p_image_normalized_lim_3[0]), int(p_image_normalized_lim_3[1])), (0, 255, 255), 2)
+
+        for i in np.arange(self.MIN_Y + 0.01, self.MAX_Y - 0.01, 0.05):
+            rmat_relative_net_top_right, tmat_relative_net_top_right = self.transform_matrix(self, 0, i,
+                                                                                             self.MAX_Z - 0.2,
+                                                                                             transform_matrix)
+            rmat_relative_net_bottom_right, tmat_relative_net_bottom_right = self.transform_matrix(self, 0, i,
+                                                                                                   self.MAX_Z - 0.5,
+                                                                                                   transform_matrix)
+
+            p_image_normalized_lim_0, _ = self.perspective_projection(rmat_relative_net_top_right,
+                                                                        tmat_relative_net_top_right,
+                                                                        mtx)
+            p_image_normalized_lim_1, _ = self.perspective_projection(rmat_relative_net_bottom_right,
+                                                                        tmat_relative_net_bottom_right,
+                                                                        mtx)
+
+            cv.line(overlay, (int(p_image_normalized_lim_0[0]), int(p_image_normalized_lim_0[1])),
+                    (int(p_image_normalized_lim_1[0]), int(p_image_normalized_lim_1[1])), (0, 255, 255), 2)
+
+        for i in np.arange(self.MAX_Z-0.49, self.MAX_Z-0.21, 0.05):
+            rmat_relative_net_top_right, tmat_relative_net_top_right = self.transform_matrix(self, 0, self.MAX_Y,
+                                                                                             i,
+                                                                                             transform_matrix)
+            rmat_relative_net_top_left, tmat_relative_net_top_left = self.transform_matrix(self, 0, self.MIN_Y,
+                                                                                           i,
+                                                                                           transform_matrix)
+            p_image_normalized_lim_0, _ = self.perspective_projection(rmat_relative_net_top_right,
+                                                                        tmat_relative_net_top_right,
+                                                                        mtx)
+            p_image_normalized_lim_1, _ = self.perspective_projection(rmat_relative_net_top_left,
+                                                                        tmat_relative_net_top_left,
+                                                                        mtx)
+            cv.line(overlay, (int(p_image_normalized_lim_0[0]), int(p_image_normalized_lim_0[1])),
+                    (int(p_image_normalized_lim_1[0]), int(p_image_normalized_lim_1[1])), (0, 255, 255), 2)
+
+
 
     @staticmethod
     def transform_matrix(self, posx, posy, posz, transform_matrix):
@@ -250,12 +286,12 @@ class GameController:
     def stop_drones(self):
         for player in self.players:
             player.land_now = True
-            
+
     def get_next_player(self):
-        
+
         if not any(not status for status in self.players_status):
             self.players_status = [False for _ in self.players]
-            
+
         for index in range(len(self.players_status)):
             if not self.players_status[index]:
                 self.players_status[index] = True
@@ -269,16 +305,16 @@ class GameController:
         detector = cv.aruco.ArucoDetector(dictionary, parameters)
 
         start_pos = ball_pos = end_pos = self.BALL_POS
-        
+
         # end_pos = (
         #     round(random.uniform(0.2, 1), 2),
         #     round(random.uniform(self.MIN_Y, self.MAX_Y), 2),
         #     round(random.uniform(self.MIN_Z, self.MAX_Z), 2)
         # )
-        
+
         need_of_new_trajectory = False
         trajectory_positions = []
-        
+
         # Get the camera calibration data
         with np.load(self.CALIBRATION_FILE) as X:
             mtx, dist, _, _ = [X[i] for i in ('mtx', 'dist', 'rvecs', 'tvecs')]
@@ -305,7 +341,7 @@ class GameController:
                     # Detect the markers
                     corners, ids, __ = detector.detectMarkers(gray)
 
-                    if np.all(ids is not None):
+                    if np.all(ids is not None) or not self.NEED_CALIBRATION:
 
                         if self.NEED_CALIBRATION:
                             if self.CPT < 5:
@@ -337,43 +373,51 @@ class GameController:
                         # Scale the ball size depending on the distance
                         ball_scale = int(self.BALL_SIZE / p_camera_ballon[2] * 200)
 
-                        overlay = frame.copy()
+                        overlay_ballon = frame.copy()
+                        overlay_terrain = frame.copy()
 
                         # Draw the ball
-                        cv.circle(overlay, (int(p_image_normalized_ballon[0]), int(p_image_normalized_ballon[1])),
+                        cv.circle(overlay_ballon, (int(p_image_normalized_ballon[0]), int(p_image_normalized_ballon[1])),
                                   ball_scale, self.BALL_COLOR, -1)
 
                         # Draw the limits
-                        self.draw_boundaries(self, transform_matrix, mtx, overlay)
+                        self.draw_boundaries(self, transform_matrix, mtx, overlay_ballon)
 
                         # Draw the pot
-                        self.draw_pot(self, transform_matrix, mtx, overlay)
+                        self.draw_pot(self, transform_matrix, mtx, overlay_terrain)
 
                         # Draw the net
-                        self.draw_net(self, transform_matrix, mtx, overlay)
+                        self.draw_net(self, transform_matrix, mtx, overlay_terrain)
 
                         # Draw the axes
                         cv.drawFrameAxes(frame, mtx, dist, rmat_relative_ballon, tmat_relative_ballon, 0.1)
 
-                        frame = cv.addWeighted(overlay, self.ALPHA, frame, 1 - self.ALPHA, 0)
+                        if ball_pos[0] > 0:
+                            frame = cv.addWeighted(overlay_ballon, self.ALPHA, frame, 1 - self.ALPHA, 0)
+                            frame = cv.addWeighted(overlay_terrain, self.ALPHA, frame, 1 - self.ALPHA, 0)
+                        else:
+                            frame = cv.addWeighted(overlay_terrain, self.ALPHA, frame, 1 - self.ALPHA, 0)
+                            frame = cv.addWeighted(overlay_ballon, self.ALPHA, frame, 1 - self.ALPHA, 0)
+
+
 
                         # Trajectory and movement of the ball
                         if need_of_new_trajectory:
                             trajectory_positions = self.parabolic_trajectory(start_pos, end_pos, self.MAX_Z + 0.5,
                                                                              self.MIN_Z, self.NB_TRAJECTORIES)
                             need_of_new_trajectory = False
-                        
+
                         if trajectory_positions:
                             ball_pos = trajectory_positions[0]
-                            
+
                         if len(trajectory_positions) > 1:
                             trajectory_positions.pop(0)
-                            
+
                         else:
-                            
+
                             need_of_new_trajectory = True
                             start_pos = end_pos
-                            
+
                             player = self.get_next_player()
 
                             end_pos = (

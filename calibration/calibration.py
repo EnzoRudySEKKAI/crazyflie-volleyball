@@ -2,28 +2,28 @@ import numpy as np
 import cv2 as cv
 import glob
 
-CAMERA_MODEL = 'C920'
+CAMERA_MODEL = 'C270'
 
 def calibrate():
     obj_points = []
     img_points = []
 
     # Chessboard size 10*7
-    #chessboard_size = (9, 6)
+    chessboard_size = (9, 6)
     # Chessboard size 9*7
-    chessboard_size = (8, 6)
+    #chessboard_size = (8, 6)
     
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
     # Chessboard size 10*7
-    # objp = np.zeros((6 * 9, 3), np.float32)
+    objp = np.zeros((6 * 9, 3), np.float32)
     # Chessboard size 9*7
-    objp = np.zeros((6 * 8, 3), np.float32)
+    #objp = np.zeros((6 * 8, 3), np.float32)
 
     # Chessboard size 10*7
-    # objp[:, :2] = np.mgrid[0:9, 0:6].T.reshape(-1, 2)
+    objp[:, :2] = np.mgrid[0:9, 0:6].T.reshape(-1, 2)
     # Chessboard size 9*7
-    objp[:, :2] = np.mgrid[0:8, 0:6].T.reshape(-1, 2)
+    #objp[:, :2] = np.mgrid[0:8, 0:6].T.reshape(-1, 2)
     
     images = glob.glob(CAMERA_MODEL+'/*.jpg')
     
