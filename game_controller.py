@@ -14,7 +14,7 @@ class GameController:
 
     # Ball variables
     BALL_COLOR = (255, 0, 0)
-    BALL_SIZE = 0.75
+    BALL_SIZE = 0.65
     BALL_POS = (0.0, 0.0, 0.5)
 
     # Aruco variables
@@ -264,7 +264,6 @@ class GameController:
                     (int(p_image_normalized_lim_1[0]), int(p_image_normalized_lim_1[1])), (0, 255, 255), 2)
 
 
-
     @staticmethod
     def transform_matrix(self, posx, posy, posz, transform_matrix):
         relative_transform_matrix_ballon = self.relative_transform_matrix(
@@ -289,7 +288,7 @@ class GameController:
 
     def get_next_player(self):
 
-        if not any(not status for status in self.players_status):
+        if all(self.players_status):
             self.players_status = [False for _ in self.players]
 
         for index in range(len(self.players_status)):
@@ -305,13 +304,7 @@ class GameController:
         detector = cv.aruco.ArucoDetector(dictionary, parameters)
 
         start_pos = ball_pos = end_pos = self.BALL_POS
-
-        # end_pos = (
-        #     round(random.uniform(0.2, 1), 2),
-        #     round(random.uniform(self.MIN_Y, self.MAX_Y), 2),
-        #     round(random.uniform(self.MIN_Z, self.MAX_Z), 2)
-        # )
-
+        
         need_of_new_trajectory = False
         trajectory_positions = []
 
@@ -322,6 +315,7 @@ class GameController:
         # Start the video capture
         cap = cv.VideoCapture(0)
         cap.set(cv.CAP_PROP_AUTOFOCUS, 0)
+        cap.set(cv.CAP_PROP_SETTINGS, 1)
 
         self.start_drones()
 
@@ -390,14 +384,14 @@ class GameController:
                         self.draw_net(self, transform_matrix, mtx, overlay_terrain)
 
                         # Draw the axes
-                        cv.drawFrameAxes(frame, mtx, dist, rmat_relative_ballon, tmat_relative_ballon, 0.1)
+                        # cv.drawFrameAxes(frame, mtx, dist, rmat_relative_ballon, tmat_relative_ballon, 0.1)
 
                         if ball_pos[0] > 0:
-                            frame = cv.addWeighted(overlay_ballon, self.ALPHA, frame, 1 - self.ALPHA, 0)
+                            frame = cv.addWeighted(overlay_ballon, self.ALPHA, frame, 1 - (self.ALPHA-0.1), 0)
                             frame = cv.addWeighted(overlay_terrain, self.ALPHA, frame, 1 - self.ALPHA, 0)
                         else:
+                            frame = cv.addWeighted(overlay_ballon, self.ALPHA, frame, 1 - (self.ALPHA+0.1), 0)
                             frame = cv.addWeighted(overlay_terrain, self.ALPHA, frame, 1 - self.ALPHA, 0)
-                            frame = cv.addWeighted(overlay_ballon, self.ALPHA, frame, 1 - self.ALPHA, 0)
 
 
 

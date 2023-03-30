@@ -6,36 +6,23 @@
         "max_x": 1,
         "min_y": 0.5,
         "max_y": -0.5,
-        "x_offset": 0.06,
-        "y_offset": 0.05,
+        "x_offset": 0.08,
+        "y_offset": 0.03,
         "z_offset": -0.15,
         "uri": "radio://0/100/2M/E7E7E7E701",
         "cache": "./cache"
     },
     {
         "origin_x": -1.0,
-        "origin_y": 0.5,
+        "origin_y": 0.0,
         "min_x": -0.3,
         "max_x": -1,
-        "min_y": 0.25,
-        "max_y": 0.6,
+        "min_y": 0.5,
+        "max_y": -0.5,
         "x_offset": 0.06,
-        "y_offset": 0.05,
+        "y_offset": 0.02,
         "z_offset": -0.15,
         "uri": "radio://0/100/2M/E7E7E7E702",
         "cache": "./cache1"
-    },
-    {
-        "origin_x": -1.0,
-        "origin_y": -0.5,
-        "min_x": -0.3,
-        "max_x": -1,
-        "min_y": -0.25,
-        "max_y": -0.6,
-        "x_offset": 0.06,
-        "y_offset": 0.05,
-        "z_offset": -0.15,
-        "uri": "radio://0/100/2M/E7E7E7E703",
-        "cache": "./cache2"
     }
 ]
