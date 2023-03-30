@@ -31,15 +31,16 @@ class GameController:
 
     ARUCO_SIZE = 0.265
 
-    # Boundaries of axis Z
-    MIN_Y = -0.5
+    # Boundaries of the terrain
+    
+    MAX_X = 1
+    MIN_X = -MAX_X
+    
     MAX_Y = 0.5
+    MIN_Y = -MAX_Y
 
     MIN_Z = 0.4
     MAX_Z = 1
-
-    MAX_X = 1
-    MIN_X = -1
 
     # Circle transparency
     ALPHA = 0.5
@@ -382,9 +383,6 @@ class GameController:
 
                         # Draw the net
                         self.draw_net(self, transform_matrix, mtx, overlay_terrain)
-
-                        # Draw the axes
-                        # cv.drawFrameAxes(frame, mtx, dist, rmat_relative_ballon, tmat_relative_ballon, 0.1)
 
                         if ball_pos[0] > 0:
                             frame = cv.addWeighted(overlay_ballon, self.ALPHA, frame, 1 - (self.ALPHA-0.1), 0)
