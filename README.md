@@ -75,17 +75,17 @@ The greater the number, the slower the ball will be. The lower the number, the f
 ### Field boundaries
 You can modify the following variables in the script ```game_controller.py``` :
 
-```MIN_Y``` : The minimum y value of the terrain.
+```MIN_Y``` : The minimum y value of the play field.
 
-```MAX_Y``` : The maximum y value of the terrain.
+```MAX_Y``` : The maximum y value of the play field.
 
-```MIN_X``` : The minimum x value of the terrain.
+```MIN_X``` : The minimum x value of the play field.
 
-```MAX_X``` : The maximum x value of the terrain.
+```MAX_X``` : The maximum x value of the play field.
 
-```MIN_Z``` : The minimum z value of the terrain. (Also the maximum height of the ball for its parabolic trajectory).
+```MIN_Z``` : The minimum z value of the play field. (Also the maximum height of the ball for its parabolic trajectory).
 
-```MAX_Z``` : The maximum z value of the terrain. (Also the minimum height of the ball for its parabolic trajectory).
+```MAX_Z``` : The maximum z value of the play field. (Also the minimum height of the ball for its parabolic trajectory).
 
 ## Authors
 
