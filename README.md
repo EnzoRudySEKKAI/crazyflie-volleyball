@@ -38,18 +38,26 @@ An aruco marker (4x4) need to be placed at the origin (0,0,0) of the LPS.
 ## Usage
 
 ### UAVs
-You should modify the following variables in the script ```game_controller.py``` 
+You should modify the following variables in json file ```drones.json```
 ```
-FIRST_PLAYER = {
-    "origin_x": DRONE ORIGIN,
-    "uri": YOUR RADIO URI,
-    # Offsets if there are some
-    "x_offset": 0.0,
-    "y_offset": 0.0,
-    "z_offset": 0.0
-}
+[
+    {
+        "origin_x": 1.0,
+        "origin_y": 0.0,
+        "min_x": 0.3,
+        "max_x": 1,
+        "min_y": 0.5,
+        "max_y": -0.5,
+        "x_offset": 0.08,
+        "y_offset": 0.03,
+        "z_offset": -0.15,
+        "uri": "radio://0/100/2M/E7E7E7E701",
+        "cache": "./cache"
+     }
+]
 
-Same for SECOND_PLAYER.
+This is an example of one drone, if you want to use more drones, use the same dict format and append them to the list.
+Meaning of each field can be found in our documentation.
 
 These variables will be used to initialize your drones.
 ```
