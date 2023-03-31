@@ -22,7 +22,7 @@ python -m pip install -r requirements.txt
 
 First of all, you will need to calibrate your camera. You can find the script in the folder ```calibration```.
 
-1. Calibrate your camera by running the script calibration.py, we have provided pictures for the following cameras: Logitech C270 and C920. If you have a different camera, you should use it to take pictures from different angles with a chessboard and modify the variable ```CAMERA_MODEL = 'C920'``` in calibration.py.
+1. Calibrate your camera by running the script calibration.py, we have provided pictures for the following cameras: Logitech C270 and C920. If you have a different camera, you should use it to take pictures from different angles with a chessboard and modify the variable ```CAMERA_MODEL``` in calibration.py.
 2. We have provided a chessboard for the calibration, you can find it in the folder ```calibration```. The file is called ```chessboard.png```. You should print it and use it to calibrate your camera.
 3. You can start the volleyball game by running the script main.py.
 
