@@ -2,7 +2,7 @@
 
 ## Important:
 
-Please checkout the code's [documentation](https://marouone.github.io/index.html) before reading this.
+Please check the code's [documentation](https://marouone.github.io/index.html) before reading this.
 
 ## Introduction
 
