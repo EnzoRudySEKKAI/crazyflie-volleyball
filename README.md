@@ -55,12 +55,12 @@ You should modify the following variables in json file ```drones.json```
         "cache": "./cache"
      }
 ]
+```
 
 This is an example of one drone, if you want to use more drones, use the same dict format and append them to the list.
-Meaning of each field can be found in our documentation.
+These settings will be used to initialize your drones.
 
-These variables will be used to initialize your drones.
-```
+The meaning of each field can be found in our [documentation](https://link-url-here.org).
 
 ### Aruco markers
 
