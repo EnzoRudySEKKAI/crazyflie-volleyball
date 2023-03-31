@@ -28,8 +28,8 @@ First of all, you will need to calibrate your camera. You can find the script in
 
 ### LPS
 
-You need to setup the Loco Positioning System to make it work with Crazyflie. (If you want to print the anchor's stand, the STL file is in the folder "lps-anchor-stand".
-Also adding a Flow Deck improves the stability and precision of the Crazyflie. We recommend you to add it.
+You need to setup the Loco Positioning System to make it work with Crazyflie. (If you want to print the anchor's stand, the STL file is in the folder "lps-anchor-stand". \
+Adding a Flow Deck improves the stability and precision of the Crazyflie. We recommend you to add it.
 
 ### Aruco Marker
 
