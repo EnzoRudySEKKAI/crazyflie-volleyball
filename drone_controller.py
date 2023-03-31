@@ -16,18 +16,17 @@ class DroneController:
     """
     This class controls the drone.
 
-    Args:
-        uri (str): URI radio channel.
-        cache (str): Drone cache filename.
-        origin_x (float): Drone origin position X axis.
-        origin_y (float): Drone origin position Y axis.
-        mix_x (float): Drone minimum position on X axis.
-        mix_y (float): Drone minimum position on Y axis.
-        max_x (float): Drone maximum position on X axis.
-        max_y (float): Drone maximum position on Y axis.
-        x_offset (float): Offset added to the position_to_visit.x in case of an existing offset between the ball position and drone position.
-        y_offset (float): Offset added to the position_to_visit.y in case of an existing offset between the ball position and drone position.
-        z_offset (float): Offset added to the position_to_visit.z in case of an existing offset between the ball position and drone position.
+    :param uri: (str) URI radio channel.
+    :param cache: (str) Drone cache filename.
+    :param origin_x: (float) Drone origin position X axis.
+    :param origin_y: (float) Drone origin position Y axis.
+    :param mix_x: (float) Drone minimum position on X axis.
+    :param mix_y: (float) Drone minimum position on Y axis.
+    :param max_x: (float) Drone maximum position on X axis.
+    :param max_y: (float) Drone maximum position on Y axis.
+    :param x_offset: (float) Offset added to the position_to_visit.x in case of an existing offset between the ball position and drone position.
+    :param y_offset: (float) Offset added to the position_to_visit.y in case of an existing offset between the ball position and drone position.
+    :param z_offset: (float) Offset added to the position_to_visit.z in case of an existing offset between the ball position and drone position.
     """
     
     DEFAULT_HEIGHT = 1.0
@@ -37,8 +36,7 @@ class DroneController:
     SLEEP_IN_LOOP = 1
     SLEEP_AFTER_TAKOFF = 5
     
-    def __init__(self, uri='radio://0/100/2M/E7E7E7E701', cache='./cache',
-                 origin_x=0.0, origin_y=0.0, min_x=0.0, min_y=-0.5, max_x=0.0,
+    def __init__(self, uri, cache, origin_x=0.0, origin_y=0.0, min_x=0.0, min_y=-0.5, max_x=0.0,
                  max_y=0.0, x_offset=0.0, y_offset=0.0, z_offset=0.0):
         self.drone_number = uri[-1::]
         self.uri = uri
@@ -99,8 +97,7 @@ class DroneController:
         """
         Sends the drone to a specific position if he gets a new position.
 
-        Args:
-            controller (PositionHlCommander): Cflib PositionHlCommander.
+        :param controller: Cflib PositionHlCommander.
         """
         
         position_x = round(self.position_to_visit.x, 2)
@@ -123,8 +120,7 @@ class DroneController:
         """
         Sends the drone back to the origin position.
 
-        Args:
-            controller (PositionHlCommander): Cflib PositionHlCommander.
+        :param controller: Cflib PositionHlCommander.
         """
         print(f"[{str(self.drone_number)}] Going back to origin")
         controller.go_to(self.origin_x, self.origin_y, 0.5)
@@ -133,10 +129,9 @@ class DroneController:
     def start(self, scf):
         
         """
-        This is the drone's main loop where he waits for a new position to visit.
+        This is the drone's main loop where it waits for a new position to visit.
 
-        Args:
-            scf (SyncCrazyflie): Cflib SyncCrazyflie.
+        :param cf: Cflib SyncCrazyflie.
         """
         
         pc = PositionHlCommander(scf, controller=PositionHlCommander.CONTROLLER_PID,

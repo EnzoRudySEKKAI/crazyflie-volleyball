@@ -14,8 +14,7 @@ class GameController:
     """
     This class controls the whole volleyball game scenario, from ball projection to sending instructions to drones.
 
-    Args:
-        players (list): A list of dicts representing the drones (players).
+    :param players: (list) A list of dicts representing the drones (players).
     """
         
     # Camera calibration file
@@ -62,10 +61,8 @@ class GameController:
         """
         Get the translation matrix from a translation vector.
         
-        Args:
-            tvec (np.array): The translation vector.
-        Returns:
-            tr (np.array): The translation matrix.
+        :param tvec: (np.array) The translation vector.
+        :return: tr (np.array) The translation matrix.
         """
         
         tr = np.identity(n=4)
@@ -77,12 +74,10 @@ class GameController:
         """
         Calculate the perspective projection of a point in the camera coordinate system.
         
-        Args:
-            rvec (np.array): The rotation vector.
-            tvec (np.array): The translation vector.
-            camera_matrix (np.array): The camera matrix.
-        Returns:
-            p_image_normalized (np.array): The normalized 2D point.
+        :param rvec: (np.array) The rotation vector.
+        :param tvec: (np.array) The translation vector.
+        :param camera_matrix: (np.array) The camera matrix.
+        :return: (np.array) p_image_normalized The normalized 2D point.
         """
         
         p = np.array([0, 0, 0]).reshape(3, 1)
@@ -103,15 +98,13 @@ class GameController:
         """
         Calculate the positions of a ball thrown from start to end with a parabolic trajectory.
         
-        Args:
-            start (tuple): The starting position of the ball.
-            end (tuple): The ending position of the ball.
-            max_height (float): The maximum height of the ball.
-            min_height (float): The minimum height of the ball.
-            frames (int): The number of frames to calculate.
+        :param start: (tuple): The starting position of the ball.
+        :param end: (tuple) The ending position of the ball.
+        :param max_height: (float) The maximum height of the ball.
+        :param min_height: (float) The minimum height of the ball.
+        :param frames: (int) The number of frames to calculate.
             
-        Returns:
-            positions (list): A list of tuples representing the positions of the ball.
+        :return: A list of tuples representing the positions of the ball.
         """
         # Calculate the displacement between start and end points
         displacement = [end[i] - start[i] for i in range(3)]
@@ -152,11 +145,9 @@ class GameController:
         """
         Get the transformation matrix from the rotation and translation vectors.
         
-        Args:
-            rvec (np.array): 3x1 rotation vector.
-            tvec (np.array): 3x1 translation vector.
-        Returns:
-            mat (np.array): 4x4 transformation matrix.
+        :param rvec: (np.array) 3x1 rotation vector.
+        :param tvec: (np.array) 3x1 translation vector.
+        :return: (np.array) 4x4 transformation matrix.
         """
         
         mat = self.get_translation_matrix(tvec)
@@ -169,11 +160,9 @@ class GameController:
         """
         Create a transformation matrix from rotation and translation vectors.
         
-        Args:
-            rotation (list): List of 3 rotation angles in radians.
-            translation (list): List of 3 translation values.
-        Returns:
-            transform_matrix (np.array): 4x4 transformation matrix.
+        :param rotation: (list) List of 3 rotation angles in radians.
+        :param translation: (list) List of 3 translation values.
+        :return: (np.array) 4x4 transformation matrix.
         """
 
         x_c, x_s = np.cos(rotation[0]), np.sin(rotation[0])
@@ -204,12 +193,11 @@ class GameController:
     def draw_boundaries(self, transform_matrix, mtx, overlay):
 
         """
-        Draw the boundaries of the volleyball court
+        Draw the boundaries of the volleyball court.
         
-        Args:
-            transform_matrix: the transform matrix of the drone
-            mtx: the camera matrix
-            overlay: the image to draw on
+        :param transform_matrix: the transform matrix of the drone
+        :param mtx: the camera matrix
+        :param overlay: the image to draw on
         """
 
         rmat_relative_lim_0, tmat_relative_lim_0 = self.transform_matrix(self, self.MAX_X, self.MAX_Y,
@@ -242,12 +230,11 @@ class GameController:
     @staticmethod
     def draw_pot(self, transform_matrix, mtx, overlay):
         """
-        Draw the pole of the net
+        Draw the pole of the net.
 
-        Args:
-            transform_matrix: the transformation matrix
-            mtx: the camera matrix
-            overlay: the image to draw on
+        :param transform_matrix: the transformation matrix
+        :param mtx: the camera matrix
+        :param overlay: the image to draw on
         """
         rmat_relative_poto_1_bas, tmat_relative_poto_1_bas = self.transform_matrix(self, 0, self.MAX_Y,
                                                                                    0, transform_matrix)
@@ -280,12 +267,11 @@ class GameController:
     @staticmethod
     def draw_net(self, transform_matrix, mtx, overlay):
         """
-        Draw the net on the image overlay
+        Draw the net on the image overlay.
 
-        Args:
-            transform_matrix: the transform matrix
-            mtx: the camera matrix
-            overlay: the image to draw on
+        :param transform_matrix: the transform matrix
+        :param mtx: the camera matrix
+        :param overlay: the image to draw on
         """
         
         rmat_relative_net_top_right, tmat_relative_net_top_right = self.transform_matrix(self, 0, self.MAX_Y,
@@ -360,15 +346,13 @@ class GameController:
         Dot multuply the transform matrix with the relative transform matrix of the object to get the
         transform matrix of the object.
 
-        Args:
-            posx: x position of the object
-            posy: y position of the object
-            posz: z position of the object
-            transform_matrix: transform matrix of the object
+        :param posx: x position of the object
+        :param posy: y position of the object
+        :param posz: z position of the object
+        :param transform_matrix: transform matrix of the object
 
-        Returns:
-            rmat_relative: rotation matrix of the object
-            tmat_relative: translation matrix of the object
+        :return: Rotation matrix of the object
+        :return: Translation matrix of the object
         """
         
         relative_transform_matrix_ballon = self.relative_transform_matrix(
@@ -403,8 +387,7 @@ class GameController:
         """
         This function checks all the players statuses and finds the next player.
 
-        Returns:
-            player (DroneController): Next player.
+        :return: (DroneController): Next player.
         """
 
         if all(self.players_status):

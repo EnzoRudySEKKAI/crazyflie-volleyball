@@ -12,8 +12,7 @@ def load_drones_settings():
     """
     Load drone settings from the json file.
 
-    Returns:
-        list: List of dicts representing drone settings.
+    :return: List of dicts representing drone settings.
     """
     with open('drones.json', 'r') as f:
         drones = json.load(f)
