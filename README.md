@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Final Master degree project. This project makes UAVs (Crazyflie drones) play VolleyBall with an augmented reality ball and field.
+Final master degree project. This project makes UAVs (Crazyflie drones) play VolleyBall with an augmented reality ball and field.
 <p align="center">
 <img src="https://github.com/EnzoRudySEKKAI/PFECam/blob/main/gif/2drone_ex00002054_AdobeExpress.gif" width="600">
 </p>
@@ -60,7 +60,7 @@ You should modify the following variables in json file ```drones.json```
 This is an example of one drone, if you want to use more drones, use the same dict format and append them to the list.
 These settings will be used to initialize your drones.
 
-The meaning of each field can be found in our [documentation](https://link-url-here.org).
+The meaning of each field can be found in our [documentation](https://marouone.github.io/index.html).
 
 ### Aruco markers
 
