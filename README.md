@@ -95,6 +95,8 @@ You can modify the following variables in the script ```game_controller.py``` :
 
 ```MAX_Z``` : The maximum z value of the play field. (Also the minimum height of the ball for its parabolic trajectory).
 
+After doing all of the above, you just need to do ```python main.py``` and enjoy the game.
+
 ## Authors
 
 * **Marouane OURICHE**
