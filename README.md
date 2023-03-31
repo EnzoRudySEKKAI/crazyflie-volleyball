@@ -72,7 +72,7 @@ The greater the number, the slower the ball will be. The lower the number, the f
 
 ```BALL_SIZE``` : The size of the ball.
 
-### Terrain boundaries
+### Field boundaries
 You can modify the following variables in the script ```game_controller.py``` :
 
 ```MIN_Y``` : The minimum y value of the terrain.
