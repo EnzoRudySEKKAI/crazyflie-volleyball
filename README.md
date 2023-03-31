@@ -1,5 +1,9 @@
 # Volleyball POC (Crazyflie 2.1)
 
+## Important:
+
+Please checkout the code's [documentation](https://marouone.github.io/index.html) before reading this.
+
 ## Introduction
 
 Final master degree project. This project makes UAVs (Crazyflie drones) play VolleyBall with an augmented reality ball and field.
