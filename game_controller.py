@@ -10,6 +10,15 @@ from position import Position
 
 
 class GameController:
+    
+    """
+    This class controls the whole volleyball game scenario, from ball projection to sending instructions to drones.
+
+    Args:
+        players (list): A list of dicts representing the drones (players).
+    """
+        
+    # Camera calibration file
     CALIBRATION_FILE = 'calibration/calibration.npz'
 
     # Ball variables
@@ -31,8 +40,7 @@ class GameController:
 
     ARUCO_SIZE = 0.265
 
-    # Boundaries of the terrain
-    
+    # Boundaries of the volleyball court
     MAX_X = 1
     MIN_X = -MAX_X
     
@@ -280,14 +288,26 @@ class GameController:
         return rmat_relative, tmat_relative
 
     def start_drones(self):
+        """
+        Creates a thread for each player and starts it.
+        """
         for player in self.players:
             Thread(target=player.main).start()
 
     def stop_drones(self):
+        """
+        Stops all the players by telling the drones to land.
+        """
         for player in self.players:
             player.land_now = True
 
     def get_next_player(self):
+        """
+        This function checks all the players statuses and finds the next player.
+
+        Returns:
+            player (DroneController): Next player.
+        """
 
         if all(self.players_status):
             self.players_status = [False for _ in self.players]
@@ -298,6 +318,11 @@ class GameController:
                 return self.players[index]
 
     def main(self):
+    
+        """
+        This is the main module's function where the game loop is.
+        This is where the ball is projected and the next position is chosen and then sent to the correspending player.
+        """
 
         # Aruco detection
         dictionary = cv.aruco.getPredefinedDictionary(cv.aruco.DICT_4X4_250)
@@ -428,5 +453,5 @@ class GameController:
             cv.destroyAllWindows()
 
         except Exception as err:
-            print(str(err))
+            # Stop drones when something bad happens (raised exception).
             self.stop_drones()

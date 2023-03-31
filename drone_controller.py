@@ -13,6 +13,23 @@ from cflib.positioning.position_hl_commander import PositionHlCommander
 
 class DroneController:
     
+    """
+    This class controls the drone.
+
+    Args:
+        uri (str): URI radio channel.
+        cache (str): Drone cache filename.
+        origin_x (float): Drone origin position X axis.
+        origin_y (float): Drone origin position Y axis.
+        mix_x (float): Drone minimum position on X axis.
+        mix_y (float): Drone minimum position on Y axis.
+        max_x (float): Drone maximum position on X axis.
+        max_y (float): Drone maximum position on Y axis.
+        x_offset (float): Offset added to the position_to_visit.x in case of an existing offset between the ball position and drone position.
+        y_offset (float): Offset added to the position_to_visit.y in case of an existing offset between the ball position and drone position.
+        z_offset (float): Offset added to the position_to_visit.z in case of an existing offset between the ball position and drone position.
+    """
+    
     DEFAULT_HEIGHT = 1.0
     DEFAULT_VELOCITY = 0.8
     
@@ -79,6 +96,13 @@ class DroneController:
         self._drone_started = drone_started
     
     def go_to_position(self, controller):
+        """
+        Sends the drone to a specific position if he gets a new position.
+
+        Args:
+            controller (PositionHlCommander): Cflib PositionHlCommander.
+        """
+        
         position_x = round(self.position_to_visit.x, 2)
         position_y = round(self.position_to_visit.y, 2)
         position_z = round(self.position_to_visit.z, 2)
@@ -96,11 +120,24 @@ class DroneController:
         self.position_to_visit = None
     
     def back_to_origin(self, controller):
+        """
+        Sends the drone back to the origin position.
+
+        Args:
+            controller (PositionHlCommander): Cflib PositionHlCommander.
+        """
         print(f"[{str(self.drone_number)}] Going back to origin")
         controller.go_to(self.origin_x, self.origin_y, 0.5)
         time.sleep(self.SLEEP_AFTER_VISIT)
         
     def start(self, scf):
+        
+        """
+        This is the drone's main loop where he waits for a new position to visit.
+
+        Args:
+            scf (SyncCrazyflie): Cflib SyncCrazyflie.
+        """
         
         pc = PositionHlCommander(scf, controller=PositionHlCommander.CONTROLLER_PID,
                                 default_velocity=self.DEFAULT_VELOCITY, default_height=self.DEFAULT_HEIGHT)
