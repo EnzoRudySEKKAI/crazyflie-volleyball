@@ -97,6 +97,8 @@ You can modify the following variables in the script ```game_controller.py``` :
 
 After doing all of the above, you just need to do ```python main.py``` and enjoy the game.
 
+If you're interested in learning more about cflib and what it's capable of, you can check more usage examples [here](https://github.com/bitcraze/crazyflie-lib-python/tree/master/examples).
+
 ## Authors
 
 * **Marouane OURICHE**
