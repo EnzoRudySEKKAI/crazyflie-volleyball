@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Final Master degree project. This project make UAV play VolleyBall with an augmented reality ball and field.
+Final Master degree project. This project makes UAVs (Crazyflie drones) play VolleyBall with an augmented reality ball and field.
 <p align="center">
 <img src="https://github.com/EnzoRudySEKKAI/PFECam/blob/main/gif/2drone_ex00002054_AdobeExpress.gif" width="600">
 </p>
@@ -28,8 +28,8 @@ First of all, you will need to calibrate your camera. You can find the script in
 
 ### LPS
 
-You need to setup LPS to make it working with crazyflie.
-Also adding a flow deck module can improve the stability and precision of the UAV's. We recommend you to add it.
+You need to setup the Loco Positioning System to make it work with Crazyflie. (If you want to print the anchor's stand, the STL file is in the folder "lps-anchor-stand".
+Also adding a Flow Deck improves the stability and precision of the Crazyflie. We recommend you to add it.
 
 ### Aruco Marker
 
